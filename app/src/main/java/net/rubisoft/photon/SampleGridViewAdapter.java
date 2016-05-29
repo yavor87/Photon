@@ -5,6 +5,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
+import static android.widget.ImageView.ScaleType.CENTER_CROP;
 
 import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
@@ -33,8 +34,8 @@ final class SampleGridViewAdapter extends BaseAdapter {
     @Override public View getView(int position, View convertView, ViewGroup parent) {
         ImageView view = (ImageView) convertView;
         if (view == null) {
-            view = new ImageView(context);
-            view.setScaleType(FIT_XY);
+            view = new SquaredImageView(context);
+            view.setScaleType(CENTER_CROP);
         }
 
         // Get the image URL for the current position.
@@ -43,6 +44,8 @@ final class SampleGridViewAdapter extends BaseAdapter {
         // Trigger the download of the URL asynchronously into the image view.
         Picasso.with(context) //
                 .load(url) //
+                .fit()
+//                .resize(500, 500)
                 .into(view);
 
         return view;
