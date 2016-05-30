@@ -7,8 +7,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.GridView;
 
-import java.util.List;
-
 /**
  * A fragment representing a list of Photos.
  */
@@ -26,7 +24,7 @@ public class PhotoListFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_photo_list, container, false);
         GridView gv = (GridView) view.findViewById(R.id.list);
-        gv.setAdapter(new SampleGridViewAdapter(this.getContext()));
+        gv.setAdapter(new SampleGridViewAdapter(this.getContext(), new net.rubisoft.photon.data.LocalImageProvider(this.getContext())));
         return view;
     }
 }

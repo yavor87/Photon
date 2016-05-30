@@ -8,27 +8,18 @@ import android.widget.ImageView;
 import static android.widget.ImageView.ScaleType.CENTER_CROP;
 
 import com.squareup.picasso.Picasso;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
-import static android.widget.ImageView.ScaleType.FIT_XY;
+import net.rubisoft.photon.data.ImageProvider;
+
+import java.util.List;
 
 final class SampleGridViewAdapter extends BaseAdapter {
     private final Context context;
-    private final List<String> urls = new ArrayList<String>();
+    private final List<String> urls;
 
-    public SampleGridViewAdapter(Context context) {
+    public SampleGridViewAdapter(Context context, ImageProvider imageProvider) {
         this.context = context;
-
-        // Ensure we get a different ordering of images on each run.
-        Collections.addAll(urls, Data.URLS);
-        Collections.shuffle(urls);
-
-        // Triple up the list.
-        ArrayList<String> copy = new ArrayList<String>(urls);
-        urls.addAll(copy);
-        urls.addAll(copy);
+        urls = imageProvider.getImages();
     }
 
     @Override public View getView(int position, View convertView, ViewGroup parent) {
