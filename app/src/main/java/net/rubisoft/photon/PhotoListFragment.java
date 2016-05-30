@@ -24,7 +24,7 @@ public class PhotoListFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_photo_list, container, false);
         GridView gv = (GridView) view.findViewById(R.id.list);
-        gv.setAdapter(new SampleGridViewAdapter(this.getContext(), new net.rubisoft.photon.data.LocalImageProvider(this.getContext())));
+        gv.setAdapter(new SampleGridViewAdapter(this.getContext(), new net.rubisoft.photon.data.SampleImageProvider()));
         return view;
     }
 }
