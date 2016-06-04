@@ -17,9 +17,9 @@ final class SampleGridViewAdapter extends BaseAdapter {
     private final Context context;
     private final List<String> urls;
 
-    public SampleGridViewAdapter(Context context, ImageProvider imageProvider) {
+    public SampleGridViewAdapter(Context context, List<String> urls) {
         this.context = context;
-        urls = imageProvider.getImages();
+        this.urls = urls;
     }
 
     @Override public View getView(int position, View convertView, ViewGroup parent) {
