@@ -41,7 +41,44 @@ public class ImaggaCategorizer implements Categorizer {
 
     @Override
     public String[] getCategories() {
-        return new String[0];
+        HttpUtils.HttpResponse response;
+        Uri categorizationCall =  new Uri.Builder()
+                .scheme("https")
+                .authority("api.imagga.com")
+                .appendPath("v1").appendPath("categorizers")
+                .build();
+
+        try {
+            response = HttpUtils.get(categorizationCall.toString(), key);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        String[] categories = null;
+        if (response.ResponseCode == 200) {
+            try {
+                JSONArray categorizersArray = new JSONArray(response.Content);
+                JSONArray labels = null;
+                for (int i = 0; i < categorizersArray.length(); i++) {
+                    JSONObject categorizerObj = (JSONObject) categorizersArray.get(i);
+                    if (categorizerObj.getString("id").equals("personal_photos")) {
+                        labels = categorizerObj.getJSONArray("labels");
+                        break;
+                    }
+                }
+                if (labels != null) {
+                    categories = new String[labels.length()];
+                    for (int i = 0; i < labels.length(); i++) {
+                        categories[i] = labels.getString(i);
+                    }
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return categories;
     }
 
     @Override
@@ -76,8 +113,8 @@ public class ImaggaCategorizer implements Categorizer {
         }
 
         if (response.ResponseCode == 200) {
-            JSONObject result = response.Content;
             try {
+                JSONObject result = new JSONObject(response.Content);
                 if (result.getString("status").equals("success")) {
                     JSONObject uploadedObj = (JSONObject) result.getJSONArray("uploaded").get(0);
                     if (uploadedObj != null) {
@@ -114,7 +151,8 @@ public class ImaggaCategorizer implements Categorizer {
 
         ArrayList<Categorizer.Categorization> categorizations = null;
         try {
-            JSONObject result = (JSONObject) response.Content.getJSONArray("results").get(0);
+            JSONObject result = (JSONObject) new JSONObject(response.Content)
+                    .getJSONArray("results").get(0);
             JSONArray categories = result.getJSONArray("categories");
             categorizations = new ArrayList<>();
             for (int i = 0; i < categories.length(); i++) {

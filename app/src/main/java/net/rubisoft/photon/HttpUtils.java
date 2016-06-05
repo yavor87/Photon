@@ -1,8 +1,6 @@
 package net.rubisoft.photon;
 
 import org.apache.http.entity.mime.MultipartEntity;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOError;
@@ -24,8 +22,6 @@ public class HttpUtils {
         conn.setReadTimeout(READ_TIMEOUT);
         conn.setRequestMethod("POST");
         conn.addRequestProperty("Authorization", "Basic " + token);
-//        conn.setRequestProperty(data.getContentType().getName(), data.getContentType().getValue());
-//        conn.setRequestProperty("Content-Length", String.valueOf(data.getContentLength()));
         conn.setDoInput(true);
         conn.setDoOutput(true);
         conn.setUseCaches(false);
@@ -42,10 +38,7 @@ public class HttpUtils {
         response.ResponseCode = conn.getResponseCode();
         InputStream res = conn.getInputStream();
         try {
-            String content = toString(res);
-            response.Content = new JSONObject(content);
-        } catch (JSONException e) {
-            e.printStackTrace();
+            response.Content = toString(res);
         } finally {
             res.close();
         }
@@ -67,10 +60,7 @@ public class HttpUtils {
         response.ResponseCode = conn.getResponseCode();
         InputStream res = conn.getInputStream();
         try {
-            String content = toString(res);
-            response.Content = new JSONObject(content);
-        } catch (JSONException e) {
-            e.printStackTrace();
+            response.Content = toString(res);
         } finally {
             res.close();
         }
@@ -114,7 +104,7 @@ public class HttpUtils {
             return response;
         }
 
-        public JSONObject Content;
+        public String Content;
         public int ResponseCode;
         public Exception Error;
     }
