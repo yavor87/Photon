@@ -1,7 +1,9 @@
-package net.rubisoft.photon;
+package net.rubisoft.photon.service;
 
 import android.app.IntentService;
 import android.content.Intent;
+
+import net.rubisoft.photon.HttpUtils;
 
 import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.FileBody;

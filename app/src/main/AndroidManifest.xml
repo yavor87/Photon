@@ -19,7 +19,7 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".CategorizationService"
+        <service android:name=".service.CategorizationService"
             android:exported="false" />
     </application>
 
