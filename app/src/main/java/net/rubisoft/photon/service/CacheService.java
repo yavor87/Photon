@@ -51,6 +51,8 @@ public class CacheService extends IntentService {
                 long rowId = db.insert(ImagesCache.Image.TABLE_NAME, null, values);
                 if (rowId > 0) {
                     stored++;
+                } else {
+                    break;
                 }
                 values.clear();
             }
@@ -72,6 +74,8 @@ public class CacheService extends IntentService {
                 long rowId = db.insert(ImagesCache.Category.TABLE_NAME, null, values);
                 if (rowId > 0) {
                     stored++;
+                } else {
+                    break;
                 }
                 values.clear();
             }
