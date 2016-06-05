@@ -6,12 +6,15 @@ import net.rubisoft.photon.HttpUtils;
 
 import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.FileBody;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class ImaggaCategorizer implements Categorizer {
@@ -42,7 +45,7 @@ public class ImaggaCategorizer implements Categorizer {
     }
 
     @Override
-    public Categorization categorizeImage(Uri image) {
+    public List<Categorization> categorizeImage(Uri image) {
         boolean hostedOnImagga = false;
         if (!mWebSchemes.contains(image.getScheme())) {
             // upload
@@ -50,13 +53,14 @@ public class ImaggaCategorizer implements Categorizer {
             hostedOnImagga = true;
         }
 
-        // categorize image
+        List<Categorization> categorizations = categorize(image);
         // store categorization info
+
 
         if (hostedOnImagga) {
             deleteImage(image);
         }
-        return null;
+        return categorizations;
     }
 
     private Uri uploadImage(Uri file) {
@@ -92,8 +96,36 @@ public class ImaggaCategorizer implements Categorizer {
         return null;
     }
 
-    private void categorizeImage(String id) {
+    private List<Categorization> categorize(Uri image) {
+        HttpUtils.HttpResponse response;
+        Uri categorizationCall =  new Uri.Builder()
+                .scheme("https")
+                .authority("api.imagga.com")
+                .appendPath("v1").appendPath("categorizations").appendPath("personal_photos")
+                .encodedQuery("url=" + image.toString())
+                .build();
 
+        try {
+            response = HttpUtils.get(categorizationCall.toString(), key);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        ArrayList<Categorizer.Categorization> categorizations = null;
+        try {
+            JSONObject result = (JSONObject) response.Content.getJSONArray("results").get(0);
+            JSONArray categories = result.getJSONArray("categories");
+            categorizations = new ArrayList<>();
+            for (int i = 0; i < categories.length(); i++) {
+                JSONObject catObj = (JSONObject) categories.get(i);
+                categorizations.add(new Categorization(catObj.getString("name"),
+                        (float) (catObj.getDouble("confidence") / 100d)));
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return categorizations;
     }
 
     private boolean deleteImage(Uri imageUri) {
