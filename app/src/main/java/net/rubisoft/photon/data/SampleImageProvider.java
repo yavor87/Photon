@@ -1,5 +1,7 @@
 package net.rubisoft.photon.data;
 
+import android.net.Uri;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -7,7 +9,7 @@ import java.util.List;
 public class SampleImageProvider implements ImageProvider {
     static final String BASE = "http://i.imgur.com/";
     static final String EXT = ".jpg";
-    static final ArrayList<String> URLS;
+    static final ArrayList<Uri> URLS;
     static {
         URLS = new ArrayList<>();
         String[] data = new String[]{
@@ -24,11 +26,13 @@ public class SampleImageProvider implements ImageProvider {
                 BASE + "aSeTYQr" + EXT, BASE + "OKvWoTh" + EXT, BASE + "zD3gT4Z" + EXT,
                 BASE + "z77CaIt" + EXT
         };
-        Collections.addAll(URLS, data);
+        for (String uriStr : data) {
+            URLS.add(Uri.parse(uriStr));
+        }
     }
 
     @Override
-    public List<String> getImages() {
+    public List<Uri> getImages() {
         Collections.shuffle(URLS);
         return URLS;
     }

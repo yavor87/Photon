@@ -1,6 +1,7 @@
 package net.rubisoft.photon;
 
 import android.content.Context;
+import android.net.Uri;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -15,9 +16,9 @@ import java.util.List;
 
 final class SampleGridViewAdapter extends BaseAdapter {
     private final Context context;
-    private final List<String> urls;
+    private final List<Uri> urls;
 
-    public SampleGridViewAdapter(Context context, List<String> urls) {
+    public SampleGridViewAdapter(Context context, List<Uri> urls) {
         this.context = context;
         this.urls = urls;
     }
@@ -30,7 +31,7 @@ final class SampleGridViewAdapter extends BaseAdapter {
         }
 
         // Get the image URL for the current position.
-        String url = getItem(position);
+        Uri url = getItem(position);
 
         // Trigger the download of the URL asynchronously into the image view.
         Picasso.with(context) //
@@ -46,7 +47,7 @@ final class SampleGridViewAdapter extends BaseAdapter {
         return urls.size();
     }
 
-    @Override public String getItem(int position) {
+    @Override public Uri getItem(int position) {
         return urls.get(position);
     }
 

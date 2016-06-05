@@ -2,6 +2,7 @@ package net.rubisoft.photon.data;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
 
@@ -30,7 +31,7 @@ public class LocalImageProvider implements ImageProvider {
     }
 
     @Override
-    public List<String> getImages() {
+    public List<Uri> getImages() {
         final String[] projection = { MediaStore.Images.Media.DATA };
         final String selection = MediaStore.Images.Media.BUCKET_ID + " = ?";
         final String[] selectionArgs = { CAMERA_IMAGE_BUCKET_ID };
@@ -42,12 +43,13 @@ public class LocalImageProvider implements ImageProvider {
         if (cursor == null)
             return new ArrayList<>();
 
-        ArrayList<String> result = new ArrayList<>(cursor.getCount());
+        ArrayList<Uri> result = new ArrayList<>(cursor.getCount());
         if (cursor.moveToFirst()) {
             final int dataColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
             do {
                 final String data = cursor.getString(dataColumn);
-                result.add(data);
+
+                result.add(Uri.parse("file:" + data));
             } while (cursor.moveToNext());
         }
         cursor.close();

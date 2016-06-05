@@ -1,6 +1,7 @@
 package net.rubisoft.photon;
 
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,10 +20,17 @@ public class PhotoListFragment extends Fragment {
      * fragment (e.g. upon screen orientation changes).
      */
     public PhotoListFragment() {
-        mProvider = new net.rubisoft.photon.data.SampleImageProvider();
     }
 
     private ImageProvider mProvider;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        mProvider = new net.rubisoft.photon.data.LocalImageProvider(getContext());
+//        mProvider = new net.rubisoft.photon.data.SampleImageProvider();
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
