@@ -57,6 +57,25 @@ public class HttpUtils {
         return response;
     }
 
+    public static HttpResponse delete(String address, String token) throws IOError, IOException {
+        URL url = new URL(address);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setConnectTimeout(CONNECTION_TIMEOUT);
+        conn.setReadTimeout(READ_TIMEOUT);
+        conn.setRequestMethod("DELETE");
+        conn.addRequestProperty("Authorization", "Basic " + token);
+        conn.setDoInput(false);
+        conn.setDoOutput(false);
+        conn.setUseCaches(false);
+
+        HttpUtils.HttpResponse response = new HttpUtils.HttpResponse();
+        response.ResponseCode = conn.getResponseCode();
+
+        conn.disconnect();
+
+        return response;
+    }
+
     public static String toString(InputStream inputStream) throws IOException {
         BufferedReader r = new BufferedReader(new InputStreamReader(inputStream));
         StringBuilder total = new StringBuilder();
