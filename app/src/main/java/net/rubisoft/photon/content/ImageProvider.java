@@ -5,6 +5,7 @@ import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.support.annotation.Nullable;
 
@@ -12,6 +13,7 @@ public class ImageProvider extends ContentProvider {
     private static final int Images = 100;
     private static final int Image = 101;
     private static final int Categories = 200;
+    private static final int Category = 201;
     private static final int CategoriesForImage = 300;
 
     private static final UriMatcher sUriMatcher = buildUriMatcher();
@@ -37,6 +39,8 @@ public class ImageProvider extends ContentProvider {
                 return ImageContract.ImageEntry.CONTENT_ITEM_TYPE;
             case Categories:
                 return ImageContract.CategoryEntry.CONTENT_TYPE;
+            case Category:
+                return ImageContract.CategoryEntry.CONTENT_ITEM_TYPE;
             case CategoriesForImage:
                 return ImageContract.CategoryEntry.CONTENT_TYPE;
             default:
@@ -47,7 +51,48 @@ public class ImageProvider extends ContentProvider {
     @Nullable
     @Override
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
-        return null;
+        Cursor retCursor;
+        switch (sUriMatcher.match(uri)) {
+            // "image/#"
+            case Image: {
+                selection = ImageContract.ImageEntry._ID + "=?";
+                selectionArgs = new String[] { uri.getLastPathSegment() };
+            }
+            // "image"
+            case Images: {
+                retCursor = mOpenHelper.getReadableDatabase().query(
+                        ImageContract.ImageEntry.TABLE_NAME,
+                        projection,
+                        selection,
+                        selectionArgs,
+                        null,
+                        null,
+                        sortOrder);
+                break;
+            }
+            // "category"
+            case Categories: {
+                retCursor = mOpenHelper.getReadableDatabase().query(
+                        ImageContract.CategoryEntry.TABLE_NAME,
+                        projection,
+                        selection,
+                        selectionArgs,
+                        null,
+                        null,
+                        sortOrder);
+                break;
+            }
+            // "category/image/#"
+            case CategoriesForImage: {
+                retCursor = getCategoriesForImage(uri, projection, sortOrder);
+                break;
+            }
+
+            default:
+                throw new UnsupportedOperationException("Unknown uri: " + uri);
+        }
+        retCursor.setNotificationUri(getContext().getContentResolver(), uri);
+        return retCursor;
     }
 
     @Nullable
@@ -112,12 +157,69 @@ public class ImageProvider extends ContentProvider {
 
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
-        return 0;
+        final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
+
+        final int match = sUriMatcher.match(uri);
+        int rowsDeleted = -1;
+
+        if (selection == null)
+            selection = "1";
+
+        switch (match) {
+            case Image : {
+                rowsDeleted = db.delete(ImageContract.ImageEntry.TABLE_NAME, selection, selectionArgs);
+                break;
+            }
+            case Category : {
+                rowsDeleted = db.delete(ImageContract.CategoryEntry.TABLE_NAME, selection, selectionArgs);
+                break;
+            }
+            default:
+                throw new UnsupportedOperationException("Unknown uri: " + uri);
+        }
+
+        if (rowsDeleted > 0) {
+            getContext().getContentResolver().notifyChange(uri, null);
+        }
+        db.close();
+        return rowsDeleted;
     }
 
     @Override
     public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
-        return 0;
+        final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
+
+        final int match = sUriMatcher.match(uri);
+        int rowsUpdated = -1;
+        switch (match) {
+            case Image : {
+                rowsUpdated = db.update(ImageContract.ImageEntry.TABLE_NAME, values, selection, selectionArgs);
+                break;
+            }
+            case Category : {
+                rowsUpdated = db.update(ImageContract.CategoryEntry.TABLE_NAME, values, selection, selectionArgs);
+                break;
+            }
+            default:
+                throw new UnsupportedOperationException("Unknown uri: " + uri);
+        }
+
+        if (rowsUpdated > 0) {
+            getContext().getContentResolver().notifyChange(uri, null);
+        }
+        db.close();
+        return rowsUpdated;
+    }
+
+    private Cursor getCategoriesForImage(Uri uri, String[] projection, String sortOrder) {
+        SQLiteQueryBuilder builder = new SQLiteQueryBuilder();
+        builder.setTables(ImageContract.CategorizedImageEntry.TABLE_NAME + " JOIN " +
+                ImageContract.CategoryEntry.TABLE_NAME + " USING (" +
+                ImageContract.CategorizedImageEntry.CATEGORY_ID + ")");
+
+        return builder.query(mOpenHelper.getReadableDatabase(), projection,
+                ImageContract.CategorizedImageEntry.IMAGE_ID + "=?",
+                new String[] { uri.getLastPathSegment() }, null, null, sortOrder);
     }
 
     static UriMatcher buildUriMatcher() {
@@ -125,6 +227,7 @@ public class ImageProvider extends ContentProvider {
         matcher.addURI(ImageContract.CONTENT_AUTHORITY, ImageContract.PATH_IMAGE, Images);
         matcher.addURI(ImageContract.CONTENT_AUTHORITY, ImageContract.PATH_IMAGE + "/#", Image);
         matcher.addURI(ImageContract.CONTENT_AUTHORITY, ImageContract.PATH_CATEGORY, Categories);
+        matcher.addURI(ImageContract.CONTENT_AUTHORITY, ImageContract.PATH_CATEGORY + "/#", Category);
         matcher.addURI(ImageContract.CONTENT_AUTHORITY, ImageContract.PATH_CATEGORY + "/image/#", CategoriesForImage);
         return matcher;
     }
