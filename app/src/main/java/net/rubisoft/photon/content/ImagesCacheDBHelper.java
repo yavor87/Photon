@@ -24,8 +24,8 @@ public class ImagesCacheDBHelper extends SQLiteOpenHelper {
         final String SQL_CREATE_IMAGES_TABLE = "CREATE TABLE " +
                 ImagesCache.Image.TABLE_NAME + " (" +
                 ImagesCache.Image._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
-                ImagesCache.Image.URI + " TEXT UNIQUE NOT NULL, " +
-                "UNIQUE (" + ImagesCache.Image.URI +
+                ImagesCache.Image.IMAGE_URI + " TEXT UNIQUE NOT NULL, " +
+                "UNIQUE (" + ImagesCache.Image.IMAGE_URI +
                 ") ON CONFLICT IGNORE" + " );";
 
         final String SQL_CREATE_CATEGORIZED_IMAGES_TABLE = "CREATE TABLE " +
@@ -36,10 +36,10 @@ public class ImagesCacheDBHelper extends SQLiteOpenHelper {
                 ImagesCache.CategorizedImage.CONFIDENCE + " REAL, " +
                 "FOREIGN KEY(" + ImagesCache.CategorizedImage.IMAGE_ID +
                 ") REFERENCES " + ImagesCache.Image.TABLE_NAME + "(" +
-                ImagesCache.Image._ID + ")" +
+                ImagesCache.Image._ID + "), " +
                 "FOREIGN KEY(" + ImagesCache.CategorizedImage.CATEGORY_ID +
                 ") REFERENCES " + ImagesCache.Category.TABLE_NAME + "(" +
-                ImagesCache.Category._ID + ");";
+                ImagesCache.Category._ID + "));";
 
         db.execSQL(SQL_CREATE_CATEGORIES_TABLE);
         db.execSQL(SQL_CREATE_IMAGES_TABLE);

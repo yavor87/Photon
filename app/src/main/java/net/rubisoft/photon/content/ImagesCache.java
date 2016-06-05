@@ -12,7 +12,7 @@ public class ImagesCache {
     public static class Image implements BaseColumns {
         public static String TABLE_NAME = "images";
 
-        public static String URI = "uri";
+        public static String IMAGE_URI = "uri";
     }
 
     public static class CategorizedImage implements BaseColumns {
