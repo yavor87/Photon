@@ -7,6 +7,7 @@ import android.os.Environment;
 import android.provider.MediaStore;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class LocalImageProvider implements ImageProvider {
@@ -39,7 +40,7 @@ public class LocalImageProvider implements ImageProvider {
                 projection,
                 selection,
                 selectionArgs,
-                null);
+                MediaStore.Images.Media.DEFAULT_SORT_ORDER);
         if (cursor == null)
             return new ArrayList<>();
 
@@ -53,6 +54,7 @@ public class LocalImageProvider implements ImageProvider {
             } while (cursor.moveToNext());
         }
         cursor.close();
+        Collections.reverse(result);
         return result;
     }
 }
