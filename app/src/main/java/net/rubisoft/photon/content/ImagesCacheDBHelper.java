@@ -19,7 +19,15 @@ public class ImagesCacheDBHelper extends SQLiteOpenHelper {
                 ImageContract.CategoryEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
                 ImageContract.CategoryEntry.NAME + " TEXT UNIQUE NOT NULL, " +
                 "UNIQUE (" + ImageContract.CategoryEntry.NAME +
-                ") ON CONFLICT IGNORE );";
+                ") ON CONFLICT IGNORE" + " );";
+
+        final String SQL_CREATE_IMAGES_TABLE = "CREATE TABLE " +
+                ImageContract.ImageEntry.TABLE_NAME + " (" +
+                ImageContract.ImageEntry._ID + " INTEGER PRIMARY KEY," +
+                ImageContract.ImageEntry.IMAGE_URI + " TEXT UNIQUE NOT NULL, " +
+                ImageContract.ImageEntry.THUMBNAIL_URI + " TEXT, " +
+                "UNIQUE (" + ImageContract.ImageEntry.IMAGE_URI +
+                ") ON CONFLICT IGNORE" + " );";
 
         final String SQL_CREATE_CATEGORIZED_IMAGES_TABLE = "CREATE TABLE " +
                 ImageContract.CategorizedImageEntry.TABLE_NAME + " (" +
@@ -27,17 +35,22 @@ public class ImagesCacheDBHelper extends SQLiteOpenHelper {
                 ImageContract.CategorizedImageEntry.IMAGE_ID + " INTEGER NOT NULL, " +
                 ImageContract.CategorizedImageEntry.CATEGORY_ID + " INTEGER NOT NULL, " +
                 ImageContract.CategorizedImageEntry.CONFIDENCE + " REAL, " +
+                "FOREIGN KEY(" + ImageContract.CategorizedImageEntry.IMAGE_ID +
+                ") REFERENCES " + ImageContract.ImageEntry.TABLE_NAME + "(" +
+                ImageContract.ImageEntry._ID + "), " +
                 "FOREIGN KEY(" + ImageContract.CategorizedImageEntry.CATEGORY_ID +
                 ") REFERENCES " + ImageContract.CategoryEntry.TABLE_NAME + "(" +
                 ImageContract.CategoryEntry._ID + "));";
 
         db.execSQL(SQL_CREATE_CATEGORIES_TABLE);
+        db.execSQL(SQL_CREATE_IMAGES_TABLE);
         db.execSQL(SQL_CREATE_CATEGORIZED_IMAGES_TABLE);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS " + ImageContract.CategoryEntry.TABLE_NAME);
+        db.execSQL("DROP TABLE IF EXISTS " + ImageContract.ImageEntry.TABLE_NAME);
         db.execSQL("DROP TABLE IF EXISTS " + ImageContract.CategorizedImageEntry.TABLE_NAME);
         onCreate(db);
     }

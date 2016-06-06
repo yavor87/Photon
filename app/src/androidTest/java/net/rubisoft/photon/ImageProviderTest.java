@@ -50,8 +50,22 @@ public class ImageProviderTest extends ProviderTestCase2<ImageProvider> {
     }
 
     @Test
+    public void getType_forImage_returnsCorrectContentType() {
+        Uri uri = ImageContract.ImageEntry.buildImageUri(1);
+        String type = getMockContentResolver().getType(uri);
+        Assert.assertEquals(ImageContract.ImageEntry.CONTENT_ITEM_TYPE, type);
+    }
+
+    @Test
+    public void getType_forImages_returnsCorrectContentType() {
+        Uri uri = ImageContract.ImageEntry.CONTENT_URI;
+        String type = getMockContentResolver().getType(uri);
+        Assert.assertEquals(ImageContract.ImageEntry.CONTENT_TYPE, type);
+    }
+
+    @Test
     public void getType_forImagesWithCategories_returnsCorrectContentType() {
-        Uri uri = ImageContract.CategoryEntry.buildImageWithCategoriesUri(2);
+        Uri uri = ImageContract.ImageEntry.buildImageWithCategoriesUri(2);
         String type = getMockContentResolver().getType(uri);
         Assert.assertEquals(ImageContract.CategoryEntry.CONTENT_TYPE, type);
     }
@@ -76,9 +90,26 @@ public class ImageProviderTest extends ProviderTestCase2<ImageProvider> {
     }
 
     @Test
+    public void insertingImage_insertsValidRecordInDB() {
+        Uri result = getMockContentResolver().insert(ImageContract.ImageEntry.CONTENT_URI,
+                getValidImage());
+
+        Assert.assertNotNull(result);
+        Cursor data = getMockContentResolver().query(result, null, null, null, null);
+        Assert.assertNotNull(data);
+        Assert.assertEquals(1, data.getCount());
+        data.moveToFirst();
+        Assert.assertEquals("file://local/img1.png",
+                data.getString(data.getColumnIndex(ImageContract.ImageEntry.IMAGE_URI)));
+        Assert.assertEquals(1,
+                data.getInt(data.getColumnIndex(ImageContract.ImageEntry._ID)));
+    }
+
+    @Test
     public void insertingCategoryForImage_insertsValidRecordInDB() {
+        getMockContentResolver().insert(ImageContract.ImageEntry.CONTENT_URI, getValidImage());
         getMockContentResolver().insert(ImageContract.CategoryEntry.CONTENT_URI, getValidCategory());
-        Uri result = getMockContentResolver().insert(ImageContract.CategoryEntry.buildImageWithCategoriesUri(1),
+        Uri result = getMockContentResolver().insert(ImageContract.ImageEntry.buildImageWithCategoriesUri(1),
                 getValidCategorization());
 
         Assert.assertNotNull(result);
@@ -93,7 +124,7 @@ public class ImageProviderTest extends ProviderTestCase2<ImageProvider> {
         Assert.assertEquals(0.6, data.getFloat(
                 data.getColumnIndex(ImageContract.CategorizedImageEntry.CONFIDENCE)), 0.001);
         Assert.assertEquals(1,
-                data.getInt(data.getColumnIndex(ImageContract.CategorizedImageEntry.IMAGE_ID)));
+                data.getInt(data.getColumnIndex(ImageContract.ImageEntry._ID)));
     }
 
     //
@@ -108,10 +139,19 @@ public class ImageProviderTest extends ProviderTestCase2<ImageProvider> {
     }
 
     @Test
+    public void bulkInsertingImages_insertsValidRecordInDB() {
+        int result = getMockContentResolver().bulkInsert(ImageContract.ImageEntry.CONTENT_URI,
+                getValidImages());
+
+        Assert.assertEquals(2, result);
+    }
+
+    @Test
     public void bulkInsertingCategorizations_insertsValidRecordInDB() {
         getMockContentResolver().bulkInsert(ImageContract.CategoryEntry.CONTENT_URI, getValidCategories());
+        getMockContentResolver().bulkInsert(ImageContract.ImageEntry.CONTENT_URI, getValidImages());
 
-        int result = getMockContentResolver().bulkInsert(ImageContract.CategoryEntry.buildImageWithCategoriesUri(1),
+        int result = getMockContentResolver().bulkInsert(ImageContract.ImageEntry.buildImageWithCategoriesUri(1),
                 getValidCategorizations());
 
         Assert.assertEquals(2, result);
@@ -159,11 +199,51 @@ public class ImageProviderTest extends ProviderTestCase2<ImageProvider> {
     }
 
     @Test
+    public void queryImages_getsValidImages() {
+        getMockContentResolver().bulkInsert(ImageContract.ImageEntry.CONTENT_URI,
+                getValidImages());
+
+        Uri dataUri = ImageContract.ImageEntry.CONTENT_URI;
+        Cursor data = getMockContentResolver().query(dataUri, null, null, null, null);
+        Assert.assertNotNull(data);
+        Assert.assertEquals(2, data.getCount());
+        data.moveToFirst();
+        Assert.assertEquals("file://local/img1.png",
+                data.getString(data.getColumnIndex(ImageContract.ImageEntry.IMAGE_URI)));
+        Assert.assertEquals(1,
+                data.getInt(data.getColumnIndex(ImageContract.ImageEntry._ID)));
+
+        data.moveToNext();
+        Assert.assertEquals("file://local/img2.png",
+                data.getString(data.getColumnIndex(ImageContract.ImageEntry.IMAGE_URI)));
+        Assert.assertEquals(2,
+                data.getInt(data.getColumnIndex(ImageContract.ImageEntry._ID)));
+    }
+
+    @Test
+    public void queryImage_getsValidImage() {
+        getMockContentResolver().bulkInsert(ImageContract.ImageEntry.CONTENT_URI,
+                getValidImages());
+
+        Uri dataUri = ImageContract.ImageEntry.buildImageUri(2);
+        Cursor data = getMockContentResolver().query(dataUri, null, null, null, null);
+        Assert.assertNotNull(data);
+        Assert.assertEquals(1, data.getCount());
+        data.moveToFirst();
+        Assert.assertEquals("file://local/img2.png",
+                data.getString(data.getColumnIndex(ImageContract.ImageEntry.IMAGE_URI)));
+        Assert.assertEquals(2,
+                data.getInt(data.getColumnIndex(ImageContract.ImageEntry._ID)));
+    }
+
+    @Test
     public void queryImageCategories_returnsZero() {
+        getMockContentResolver().bulkInsert(ImageContract.ImageEntry.CONTENT_URI,
+                getValidImages());
         getMockContentResolver().bulkInsert(ImageContract.CategoryEntry.CONTENT_URI,
                 getValidCategories());
 
-        Uri dataUri = ImageContract.CategoryEntry.buildImageWithCategoriesUri(2);
+        Uri dataUri = ImageContract.ImageEntry.buildImageWithCategoriesUri(2);
         Cursor data = getMockContentResolver().query(dataUri, null, null, null, null);
         Assert.assertNotNull(data);
         Assert.assertEquals(0, data.getCount());
@@ -172,13 +252,16 @@ public class ImageProviderTest extends ProviderTestCase2<ImageProvider> {
     @Test
     public void queryImageCategories_returnsCorrectCategories() {
         getMockContentResolver().bulkInsert(ImageContract.CategoryEntry.CONTENT_URI, getValidCategories());
-        getMockContentResolver().bulkInsert(ImageContract.CategoryEntry.buildImageWithCategoriesUri(1),
+        getMockContentResolver().bulkInsert(ImageContract.ImageEntry.CONTENT_URI, getValidImages());
+        getMockContentResolver().bulkInsert(ImageContract.ImageEntry.buildImageWithCategoriesUri(1),
                 getValidCategorizations());
 
+        getMockContentResolver().bulkInsert(ImageContract.ImageEntry.CONTENT_URI,
+                getValidImages());
         getMockContentResolver().bulkInsert(ImageContract.CategoryEntry.CONTENT_URI,
                 getValidCategories());
 
-        Uri dataUri = ImageContract.CategoryEntry.buildImageWithCategoriesUri(1);
+        Uri dataUri = ImageContract.ImageEntry.buildImageWithCategoriesUri(1);
         Cursor data = getMockContentResolver().query(dataUri, new String[] { ImageContract.CategoryEntry.NAME }, null, null, null);
         Assert.assertNotNull(data);
         Assert.assertEquals(2, data.getCount());
@@ -199,6 +282,21 @@ public class ImageProviderTest extends ProviderTestCase2<ImageProvider> {
         values[0] = contentValues1;
         ContentValues contentValues2 = new ContentValues();
         contentValues2.put(ImageContract.CategoryEntry.NAME, "sky");
+        values[1] = contentValues2;
+        return values;
+    }
+
+    private ContentValues getValidImage() {
+        return getValidImages()[0];
+    }
+
+    private ContentValues[] getValidImages() {
+        ContentValues[] values = new ContentValues[2];
+        ContentValues contentValues1 = new ContentValues();
+        contentValues1.put(ImageContract.ImageEntry.IMAGE_URI, "file://local/img1.png");
+        values[0] = contentValues1;
+        ContentValues contentValues2 = new ContentValues();
+        contentValues2.put(ImageContract.ImageEntry.IMAGE_URI, "file://local/img2.png");
         values[1] = contentValues2;
         return values;
     }

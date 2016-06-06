@@ -2,7 +2,7 @@ package net.rubisoft.photon.categorization;
 
 import android.net.Uri;
 
-import net.rubisoft.photon.utils.HttpUtils;
+import net.rubisoft.photon.HttpUtils;
 
 import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.FileBody;

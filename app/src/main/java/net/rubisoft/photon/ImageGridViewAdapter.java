@@ -1,59 +1,39 @@
 package net.rubisoft.photon;
 
 import android.content.Context;
-import android.net.Uri;
+import android.database.Cursor;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
+import android.widget.CursorAdapter;
 import android.widget.ImageView;
 import static android.widget.ImageView.ScaleType.CENTER_CROP;
 
 import com.squareup.picasso.Picasso;
 
-import net.rubisoft.photon.content.PhotoItem;
-
-import java.util.List;
-
-final class ImageGridViewAdapter extends BaseAdapter {
-    public ImageGridViewAdapter(Context context, List<PhotoItem> items) {
-        mContext = context;
-        mItems = items;
+final class ImageGridViewAdapter extends CursorAdapter {
+    public ImageGridViewAdapter(Context context, Cursor c, int flags) {
+        super(context, c, flags);
     }
 
-    private Context mContext;
-    private List<PhotoItem> mItems;
-
-
-    @Override public View getView(int position, View convertView, ViewGroup parent) {
-        ImageView view = (ImageView) convertView;
-        if (view == null) {
-            view = new SquaredImageView(mContext);
-            view.setScaleType(CENTER_CROP);
-        }
-
-        // Get the image URL for the current position.
-        PhotoItem item = getItem(position);
-        Uri url = item.getThumbnailUri() != null ? item.getThumbnailUri() : item.getFullImageUri();
-
-        // Trigger the download of the URL asynchronously into the image view.
-        Picasso.with(mContext) //
-                .load(url) //
-                .fit()
-//                .resize(500, 500)
-                .into(view);
-
+    @Override
+    public View newView(Context context, Cursor cursor, ViewGroup parent) {
+        SquaredImageView view = new SquaredImageView(context);
+        view.setScaleType(CENTER_CROP);
         return view;
     }
 
-    @Override public int getCount() {
-        return mItems.size();
-    }
+    @Override
+    public void bindView(View view, Context context, Cursor cursor) {
+        // Get the image URL for the current position.
+        String url = cursor.getString(PhotoListFragment.COL_THUMB_URI);
+        if (url == null || url.isEmpty())
+            url = cursor.getString(PhotoListFragment.COL_IMAGE_URI);
 
-    @Override public PhotoItem getItem(int position) {
-        return mItems.get(position);
-    }
-
-    @Override public long getItemId(int position) {
-        return position;
+        // Trigger the download of the URL asynchronously into the image view.
+        Picasso.with(context) //
+                .load(url) //
+                .fit()
+//                .resize(500, 500)
+                .into((ImageView) view);
     }
 }

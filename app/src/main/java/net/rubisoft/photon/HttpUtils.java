@@ -1,4 +1,4 @@
-package net.rubisoft.photon.utils;
+package net.rubisoft.photon;
 
 import org.apache.http.entity.mime.MultipartEntity;
 
