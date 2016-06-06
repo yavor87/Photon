@@ -78,16 +78,64 @@ public class ImageProviderTest extends ProviderTestCase2<ImageProvider> {
         Assert.assertNotNull(result);
         Cursor data = getMockContentResolver().query(result, null, null, null, null);
         Assert.assertNotNull(data);
+        Assert.assertEquals(1, data.getCount());
         data.moveToFirst();
-        String name = data.getString(data.getColumnIndex(ImageContract.CategoryEntry.NAME));
-        Assert.assertEquals("landscape", name);
-        int id = data.getInt(data.getColumnIndex(ImageContract.CategoryEntry._ID));
-        Assert.assertEquals(1, id);
+        Assert.assertEquals("landscape",
+                data.getString(data.getColumnIndex(ImageContract.CategoryEntry.NAME)));
+        Assert.assertEquals(1,
+                data.getInt(data.getColumnIndex(ImageContract.CategoryEntry._ID)));
+    }
+
+    @Test
+    public void queryCategories_getsValidCategories() {
+        getMockContentResolver().bulkInsert(ImageContract.CategoryEntry.CONTENT_URI,
+                getValidCategories());
+
+        Uri dataUri = ImageContract.CategoryEntry.CONTENT_URI;
+        Cursor data = getMockContentResolver().query(dataUri, null, null, null, null);
+        Assert.assertNotNull(data);
+        Assert.assertEquals(2, data.getCount());
+        data.moveToFirst();
+        Assert.assertEquals("landscape",
+                data.getString(data.getColumnIndex(ImageContract.CategoryEntry.NAME)));
+        Assert.assertEquals(1,
+                data.getInt(data.getColumnIndex(ImageContract.CategoryEntry._ID)));
+
+        data.moveToNext();
+        Assert.assertEquals("sky",
+                data.getString(data.getColumnIndex(ImageContract.CategoryEntry.NAME)));
+        Assert.assertEquals(2,
+                data.getInt(data.getColumnIndex(ImageContract.CategoryEntry._ID)));
+    }
+
+    @Test
+    public void queryCategory_getsValidCategory() {
+        getMockContentResolver().bulkInsert(ImageContract.CategoryEntry.CONTENT_URI,
+                getValidCategories());
+
+        Uri dataUri = ImageContract.CategoryEntry.buildCategoryUri(2);
+        Cursor data = getMockContentResolver().query(dataUri, null, null, null, null);
+        Assert.assertNotNull(data);
+        Assert.assertEquals(1, data.getCount());
+        data.moveToFirst();
+        Assert.assertEquals("sky",
+                data.getString(data.getColumnIndex(ImageContract.CategoryEntry.NAME)));
+        Assert.assertEquals(2,
+                data.getInt(data.getColumnIndex(ImageContract.CategoryEntry._ID)));
     }
 
     private ContentValues getValidCategory() {
-        ContentValues contentValues = new ContentValues();
-        contentValues.put(ImageContract.CategoryEntry.NAME, "landscape");
-        return contentValues;
+        return getValidCategories()[0];
+    }
+
+    private ContentValues[] getValidCategories() {
+        ContentValues[] values = new ContentValues[2];
+        ContentValues contentValues1 = new ContentValues();
+        contentValues1.put(ImageContract.CategoryEntry.NAME, "landscape");
+        values[0] = contentValues1;
+        ContentValues contentValues2 = new ContentValues();
+        contentValues2.put(ImageContract.CategoryEntry.NAME, "sky");
+        values[1] = contentValues2;
+        return values;
     }
 }
