@@ -13,6 +13,7 @@ public class ImageContract {
     public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
 
     public static final String PATH_IMAGE = "image";
+    public static final String PATH_UNCATEGORIZED_IMAGES = "uncategorized";
     public static final String PATH_CATEGORY = "category";
 
     public static class CategoryEntry implements BaseColumns {
@@ -49,6 +50,10 @@ public class ImageContract {
 
         public static Uri buildImageUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
+        }
+
+        public static Uri uncategorizedImagesUri() {
+            return BASE_CONTENT_URI.buildUpon().appendPath(PATH_UNCATEGORIZED_IMAGES).build();
         }
 
         public static Uri buildImageWithCategoriesUri(long id) {

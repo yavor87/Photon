@@ -13,9 +13,17 @@ import android.support.annotation.Nullable;
 public class ImageProvider extends ContentProvider {
     private static final int Images = 100;
     private static final int Image = 101;
+    private static final int UncategorizedImages = 111;
     private static final int Categories = 200;
     private static final int Category = 201;
     private static final int CategoriesForImage = 300;
+
+    private static final String UNCATEGORIZED_FILTER = "NOT EXISTS (SELECT " +
+            ImageContract.CategorizedImageEntry.IMAGE_ID + " FROM " +
+            ImageContract.CategorizedImageEntry.TABLE_NAME + " WHERE " +
+            ImageContract.CategorizedImageEntry.TABLE_NAME + "." +
+            ImageContract.CategorizedImageEntry.IMAGE_ID + " = " +
+            ImageContract.ImageEntry.TABLE_NAME + "." + ImageContract.ImageEntry._ID + ")";
 
     private static final UriMatcher sUriMatcher = buildUriMatcher();
     private ImagesCacheDBHelper mOpenHelper;
@@ -35,15 +43,15 @@ public class ImageProvider extends ContentProvider {
 
         switch (match) {
             case Images:
+            case UncategorizedImages:
                 return ImageContract.ImageEntry.CONTENT_TYPE;
             case Image:
                 return ImageContract.ImageEntry.CONTENT_ITEM_TYPE;
             case Categories:
+            case CategoriesForImage:
                 return ImageContract.CategoryEntry.CONTENT_TYPE;
             case Category:
                 return ImageContract.CategoryEntry.CONTENT_ITEM_TYPE;
-            case CategoriesForImage:
-                return ImageContract.CategoryEntry.CONTENT_TYPE;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -66,6 +74,17 @@ public class ImageProvider extends ContentProvider {
                         projection,
                         selection,
                         selectionArgs,
+                        null,
+                        null,
+                        sortOrder);
+                break;
+            }
+            // "uncategorized"
+            case UncategorizedImages: {
+                retCursor =  mOpenHelper.getReadableDatabase().query(ImageContract.ImageEntry.TABLE_NAME,
+                        projection,
+                        UNCATEGORIZED_FILTER,
+                        null,
                         null,
                         null,
                         sortOrder);
@@ -163,6 +182,7 @@ public class ImageProvider extends ContentProvider {
             db.setTransactionSuccessful();
         } finally {
             db.endTransaction();
+            db.close();
         }
         if (returnCount > 0)
             getContext().getContentResolver().notifyChange(uri, null);
@@ -245,6 +265,7 @@ public class ImageProvider extends ContentProvider {
         matcher.addURI(ImageContract.CONTENT_AUTHORITY, ImageContract.PATH_IMAGE + "/#/categories", CategoriesForImage);
         matcher.addURI(ImageContract.CONTENT_AUTHORITY, ImageContract.PATH_CATEGORY, Categories);
         matcher.addURI(ImageContract.CONTENT_AUTHORITY, ImageContract.PATH_CATEGORY + "/#", Category);
+        matcher.addURI(ImageContract.CONTENT_AUTHORITY, ImageContract.PATH_UNCATEGORIZED_IMAGES, UncategorizedImages);
         return matcher;
     }
 }

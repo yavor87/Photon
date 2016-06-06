@@ -221,6 +221,30 @@ public class ImageProviderTest extends ProviderTestCase2<ImageProvider> {
     }
 
     @Test
+    public void queryUncategorizedImages_getsAllImages() {
+        getMockContentResolver().bulkInsert(ImageContract.ImageEntry.CONTENT_URI,
+                getValidImages());
+        getMockContentResolver().bulkInsert(ImageContract.CategoryEntry.CONTENT_URI,
+                getValidCategories());
+
+        Uri dataUri = ImageContract.ImageEntry.uncategorizedImagesUri();
+        Cursor data = getMockContentResolver().query(dataUri, null, null, null, null);
+        Assert.assertNotNull(data);
+        Assert.assertEquals(2, data.getCount());
+        data.moveToFirst();
+        Assert.assertEquals("file://local/img1.png",
+                data.getString(data.getColumnIndex(ImageContract.ImageEntry.IMAGE_URI)));
+        Assert.assertEquals(1,
+                data.getInt(data.getColumnIndex(ImageContract.ImageEntry._ID)));
+
+        data.moveToNext();
+        Assert.assertEquals("file://local/img2.png",
+                data.getString(data.getColumnIndex(ImageContract.ImageEntry.IMAGE_URI)));
+        Assert.assertEquals(2,
+                data.getInt(data.getColumnIndex(ImageContract.ImageEntry._ID)));
+    }
+
+    @Test
     public void queryImage_getsValidImage() {
         getMockContentResolver().bulkInsert(ImageContract.ImageEntry.CONTENT_URI,
                 getValidImages());
