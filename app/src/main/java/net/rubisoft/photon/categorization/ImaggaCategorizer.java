@@ -41,6 +41,9 @@ public class ImaggaCategorizer implements Categorizer {
 
     @Override
     public String[] getCategories() {
+        if (key.isEmpty())
+            throw new AssertionError("Imagga key is empty");
+
         HttpUtils.HttpResponse response;
         Uri categorizationCall =  new Uri.Builder()
                 .scheme("https")

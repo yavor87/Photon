@@ -23,11 +23,11 @@ public class ImagesCacheDBHelper extends SQLiteOpenHelper {
 
         final String SQL_CREATE_IMAGES_TABLE = "CREATE TABLE " +
                 ImageContract.ImageEntry.TABLE_NAME + " (" +
-                ImageContract.ImageEntry._ID + " INTEGER PRIMARY KEY," +
-                ImageContract.ImageEntry.IMAGE_URI + " TEXT UNIQUE NOT NULL, " +
+                ImageContract.ImageEntry._ID + " INTEGER UNIQUE NOT NULL," +
+                ImageContract.ImageEntry.IMAGE_URI + " TEXT NOT NULL, " +
                 ImageContract.ImageEntry.THUMBNAIL_URI + " TEXT, " +
-                "UNIQUE (" + ImageContract.ImageEntry.IMAGE_URI +
-                ") ON CONFLICT IGNORE" + " );";
+                "UNIQUE (" + ImageContract.ImageEntry._ID +
+                ") ON CONFLICT REPLACE" + " );";
 
         final String SQL_CREATE_CATEGORIZED_IMAGES_TABLE = "CREATE TABLE " +
                 ImageContract.CategorizedImageEntry.TABLE_NAME + " (" +
