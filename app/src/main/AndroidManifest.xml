@@ -27,7 +27,8 @@
 
         <provider
             android:authorities="net.rubisoft.photon"
-            android:name=".content.ImageProvider" />
+            android:name=".content.ImageProvider"
+            android:exported="false" />
     </application>
 
 </manifest>

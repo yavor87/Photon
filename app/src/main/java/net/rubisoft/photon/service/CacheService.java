@@ -69,6 +69,9 @@ public class CacheService extends IntentService {
         try {
             Categorizer categorizer = ImaggaCategorizer.getInstance();
             String[] categories = categorizer.getCategories();
+            if (categories == null)
+                return;
+
             ContentValues[] values = new ContentValues[categories.length];
             for (int i = 0; i < categories.length; i++) {
                 ContentValues value = new ContentValues();
