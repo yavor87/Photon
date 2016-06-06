@@ -88,7 +88,7 @@ public class ImageProvider extends ContentProvider {
                         sortOrder);
                 break;
             }
-            // "category/image/#"
+            // "image/#/categories"
             case CategoriesForImage: {
                 retCursor = getCategoriesForImage(uri, projection, sortOrder);
                 break;

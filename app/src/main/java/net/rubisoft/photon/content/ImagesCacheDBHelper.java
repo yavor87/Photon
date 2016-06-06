@@ -23,8 +23,9 @@ public class ImagesCacheDBHelper extends SQLiteOpenHelper {
 
         final String SQL_CREATE_IMAGES_TABLE = "CREATE TABLE " +
                 ImageContract.ImageEntry.TABLE_NAME + " (" +
-                ImageContract.ImageEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+                ImageContract.ImageEntry._ID + " INTEGER PRIMARY KEY," +
                 ImageContract.ImageEntry.IMAGE_URI + " TEXT UNIQUE NOT NULL, " +
+                ImageContract.ImageEntry.THUMBNAIL_URI + " TEXT, " +
                 "UNIQUE (" + ImageContract.ImageEntry.IMAGE_URI +
                 ") ON CONFLICT IGNORE" + " );";
 

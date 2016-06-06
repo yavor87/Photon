@@ -37,6 +37,7 @@ public class ImageContract {
         public static String TABLE_NAME = "images";
 
         public static String IMAGE_URI = "uri";
+        public static String THUMBNAIL_URI = "thumb_uri";
 
         public static final Uri CONTENT_URI =
                 BASE_CONTENT_URI.buildUpon().appendPath(PATH_IMAGE).build();

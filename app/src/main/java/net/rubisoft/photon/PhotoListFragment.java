@@ -35,10 +35,12 @@ public class PhotoListFragment extends Fragment implements LoaderManager.LoaderC
 
     private static final String[] IMAGE_COLUMNS = {
             ImageContract.ImageEntry._ID,
+            ImageContract.ImageEntry.THUMBNAIL_URI,
             ImageContract.ImageEntry.IMAGE_URI
     };
     static final int COL_IMAGE_ID = 0;
-    static final int COL_IMAGE_URI = 1;
+    static final int COL_THUMB_URI = 1;
+    static final int COL_IMAGE_URI = 2;
 
     private ImageGridViewAdapter mImageAdapter;
     private static final int READ_EXTERNAL_STORAGE_PERMISSION_REQUEST = 101;

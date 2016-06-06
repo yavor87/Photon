@@ -1,21 +1,24 @@
 package net.rubisoft.photon.service;
 
+import android.Manifest;
 import android.app.IntentService;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.os.Environment;
+import android.provider.MediaStore;
+import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
 import net.rubisoft.photon.categorization.Categorizer;
 import net.rubisoft.photon.categorization.ImaggaCategorizer;
 import net.rubisoft.photon.content.ImageContract;
 import net.rubisoft.photon.content.ImagesCacheDBHelper;
-import net.rubisoft.photon.data.ImageProvider;
-import net.rubisoft.photon.data.LocalImageProvider;
-
-import java.util.List;
 
 public class CacheService extends IntentService {
     public CacheService() {
@@ -43,20 +46,19 @@ public class CacheService extends IntentService {
     private void cacheImages() {
         SQLiteDatabase db = new ImagesCacheDBHelper(this).getWritableDatabase();
         try {
-            ImageProvider imageProvider = new LocalImageProvider(this);
-            List<Uri> images = imageProvider.getImages();
             ContentResolver resolver = getContentResolver();
-            ContentValues values = new ContentValues();
+            ContentValues[] values = getImages();
+            if (values == null)
+                return;
+
             int stored = 0;
-            for (Uri imageUri : images) {
-                values.put(ImageContract.ImageEntry.IMAGE_URI, imageUri.toString());
-                Uri row = resolver.insert(ImageContract.ImageEntry.CONTENT_URI, values);
+            for (ContentValues value : values) {
+                Uri row = resolver.insert(ImageContract.ImageEntry.CONTENT_URI, value);
                 if (row != null) {
                     stored++;
                 } else {
                     break;
                 }
-                values.clear();
             }
             Log.v(LOG_TAG, "Stored " + stored + " images in db");
         } finally {
@@ -83,5 +85,73 @@ public class CacheService extends IntentService {
         } finally {
             db.close();
         }
+    }
+
+    public static final String CAMERA_IMAGE_BUCKET_NAME =
+            Environment.getExternalStorageDirectory().toString()
+                    + "/DCIM/Camera";
+    public static final String CAMERA_IMAGE_BUCKET_ID =
+            getBucketId(CAMERA_IMAGE_BUCKET_NAME);
+
+    private static String getBucketId(String path) {
+        return String.valueOf(path.toLowerCase().hashCode());
+    }
+
+    @Nullable
+    private ContentValues[] getImages() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) !=
+                PackageManager.PERMISSION_GRANTED)
+            return null;
+
+        ContentResolver resolver = getContentResolver();
+
+        final String[] projection = { MediaStore.Images.Media.DATA, MediaStore.Images.Media._ID, };
+        final String selection = MediaStore.Images.Media.BUCKET_ID + " = ?";
+        final String[] selectionArgs = { CAMERA_IMAGE_BUCKET_ID };
+        final Cursor cursor = resolver.query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                projection,
+                selection,
+                selectionArgs,
+                MediaStore.Images.Media.DEFAULT_SORT_ORDER);
+        if (cursor == null) {
+            return null;
+        }
+
+        ContentValues[] results = new ContentValues[cursor.getCount()];
+        int i = 0;
+        try {
+            if (cursor.moveToFirst()) {
+                final int idColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID);
+                final int dataColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+                do {
+                    int imageId = cursor.getInt(idColumn);
+                    ContentValues values = new ContentValues();
+                    values.put(ImageContract.ImageEntry._ID, imageId);
+                    values.put(ImageContract.ImageEntry.IMAGE_URI, "file:" + cursor.getString(dataColumn));
+
+                    // Obtain thumbnail
+                    Cursor thumbnail = resolver.query(MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI,
+                            new String[]{ MediaStore.Images.Thumbnails.DATA },
+                            MediaStore.Images.Thumbnails.IMAGE_ID + "=?",
+                            new String[]{Integer.toString(imageId)}, null);
+                    try {
+                        if (thumbnail != null && thumbnail.moveToFirst()) {
+                            values.put(ImageContract.ImageEntry.THUMBNAIL_URI, "file:" +
+                                    thumbnail.getString(0));
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }finally {
+                        thumbnail.close();
+                    }
+
+                    results[i++] = values;
+                } while (cursor.moveToNext());
+            }
+        } finally {
+            cursor.close();
+        }
+
+        return results;
     }
 }
