@@ -70,6 +70,10 @@ public class ImageProviderTest extends ProviderTestCase2<ImageProvider> {
         Assert.assertEquals(ImageContract.CategoryEntry.CONTENT_TYPE, type);
     }
 
+    //
+    // Insert
+    //
+
     @Test
     public void insertingCategory_insertsValidRecordInDB() {
         Uri result = getMockContentResolver().insert(ImageContract.CategoryEntry.CONTENT_URI,
@@ -123,6 +127,40 @@ public class ImageProviderTest extends ProviderTestCase2<ImageProvider> {
         Assert.assertEquals(1,
                 data.getInt(data.getColumnIndex(ImageContract.ImageEntry._ID)));
     }
+
+    //
+    // Bulk Insert
+    //
+    @Test
+    public void bulkInsertingCategories_insertsValidRecordInDB() {
+        int result = getMockContentResolver().bulkInsert(ImageContract.CategoryEntry.CONTENT_URI,
+                getValidCategories());
+
+        Assert.assertEquals(2, result);
+    }
+
+    @Test
+    public void bulkInsertingImages_insertsValidRecordInDB() {
+        int result = getMockContentResolver().bulkInsert(ImageContract.ImageEntry.CONTENT_URI,
+                getValidImages());
+
+        Assert.assertEquals(2, result);
+    }
+
+    @Test
+    public void bulkInsertingCategorizations_insertsValidRecordInDB() {
+        getMockContentResolver().bulkInsert(ImageContract.CategoryEntry.CONTENT_URI, getValidCategories());
+        getMockContentResolver().bulkInsert(ImageContract.ImageEntry.CONTENT_URI, getValidImages());
+
+        int result = getMockContentResolver().bulkInsert(ImageContract.ImageEntry.buildImageWithCategoriesUri(1),
+                getValidCategorizations());
+
+        Assert.assertEquals(2, result);
+    }
+
+    //
+    // Query
+    //
 
     @Test
     public void queryCategories_getsValidCategories() {

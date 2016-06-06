@@ -145,6 +145,8 @@ public class ImageProvider extends ContentProvider {
             tableName = ImageContract.ImageEntry.TABLE_NAME;
         } else if (match == Categories) {
             tableName = ImageContract.CategoryEntry.TABLE_NAME;
+        } else if (match == CategoriesForImage) {
+            tableName = ImageContract.CategorizedImageEntry.TABLE_NAME;
         } else {
             return super.bulkInsert(uri, values);
         }
