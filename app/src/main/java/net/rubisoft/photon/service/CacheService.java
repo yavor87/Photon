@@ -44,13 +44,13 @@ public class CacheService extends IntentService {
     }
 
     private void cacheImages() {
+        ContentValues[] values = getImages();
+        if (values == null)
+            return;
+
         SQLiteDatabase db = new ImagesCacheDBHelper(this).getWritableDatabase();
         try {
             ContentResolver resolver = getContentResolver();
-            ContentValues[] values = getImages();
-            if (values == null)
-                return;
-
             int stored = 0;
             for (ContentValues value : values) {
                 Uri row = resolver.insert(ImageContract.ImageEntry.CONTENT_URI, value);
@@ -67,13 +67,13 @@ public class CacheService extends IntentService {
     }
 
     private void cacheCategories() {
+        Categorizer categorizer = ImaggaCategorizer.getInstance();
+        String[] categories = categorizer.getCategories();
+        if (categories == null)
+            return;
+
         SQLiteDatabase db = new ImagesCacheDBHelper(this).getWritableDatabase();
         try {
-            Categorizer categorizer = ImaggaCategorizer.getInstance();
-            String[] categories = categorizer.getCategories();
-            if (categories == null)
-                return;
-
             ContentValues[] values = new ContentValues[categories.length];
             for (int i = 0; i < categories.length; i++) {
                 ContentValues value = new ContentValues();
