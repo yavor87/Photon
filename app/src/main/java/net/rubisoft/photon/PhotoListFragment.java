@@ -1,23 +1,28 @@
 package net.rubisoft.photon;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.GridView;
 
-import net.rubisoft.photon.data.ImageProvider;
+import net.rubisoft.photon.content.ImageContract;
 
 /**
  * A fragment representing a list of Photos.
  */
-public class PhotoListFragment extends Fragment {
+public class PhotoListFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -26,17 +31,25 @@ public class PhotoListFragment extends Fragment {
     public PhotoListFragment() {
     }
 
-    private ImageProvider mProvider;
-    private GridView mGridView;
+    private static final int LOADER_ID = 0;
+
+    private static final String[] IMAGE_COLUMNS = {
+            ImageContract.ImageEntry._ID,
+            ImageContract.ImageEntry.IMAGE_URI
+    };
+    static final int COL_IMAGE_ID = 0;
+    static final int COL_IMAGE_URI = 1;
+
+    private ImageGridViewAdapter mImageAdapter;
     private static final int READ_EXTERNAL_STORAGE_PERMISSION_REQUEST = 101;
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
 
         if (ContextCompat.checkSelfPermission(getContext(),
                 Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-            mProvider = new net.rubisoft.photon.data.LocalImageProvider(getContext());
+            getLoaderManager().initLoader(LOADER_ID, null, this);
         } else {
             requestPermissions(new String[] { Manifest.permission.READ_EXTERNAL_STORAGE },
                     READ_EXTERNAL_STORAGE_PERMISSION_REQUEST);
@@ -47,25 +60,33 @@ public class PhotoListFragment extends Fragment {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == READ_EXTERNAL_STORAGE_PERMISSION_REQUEST && grantResults.length == 1 &&
                 grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            mProvider = new net.rubisoft.photon.data.LocalImageProvider(getContext());
-        } else {
-            mProvider = new net.rubisoft.photon.data.SampleImageProvider();
+            getLoaderManager().initLoader(LOADER_ID, null, this);
         }
-        setAdapter();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_photo_list, container, false);
-        mGridView = (GridView) view.findViewById(R.id.list);
-        if (mProvider != null) {
-            setAdapter();
-        }
+        GridView gridView = (GridView) view.findViewById(R.id.list);
+        mImageAdapter = new ImageGridViewAdapter(getContext(), null, 0);
+        gridView.setAdapter(mImageAdapter);
         return view;
     }
 
-    private void setAdapter() {
-        mGridView.setAdapter(new SampleGridViewAdapter(this.getContext(), mProvider.getImages()));
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        Context context = getContext();
+        return new CursorLoader(context, ImageContract.ImageEntry.CONTENT_URI, IMAGE_COLUMNS, null, null, null);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        mImageAdapter.swapCursor(data);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        mImageAdapter.swapCursor(null);
     }
 }
