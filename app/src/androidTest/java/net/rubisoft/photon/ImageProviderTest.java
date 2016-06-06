@@ -73,7 +73,6 @@ public class ImageProviderTest extends ProviderTestCase2<ImageProvider> {
     //
     // Insert
     //
-
     @Test
     public void insertingCategory_insertsValidRecordInDB() {
         Uri result = getMockContentResolver().insert(ImageContract.CategoryEntry.CONTENT_URI,
@@ -161,7 +160,6 @@ public class ImageProviderTest extends ProviderTestCase2<ImageProvider> {
     //
     // Query
     //
-
     @Test
     public void queryCategories_getsValidCategories() {
         getMockContentResolver().bulkInsert(ImageContract.CategoryEntry.CONTENT_URI,
@@ -251,6 +249,27 @@ public class ImageProviderTest extends ProviderTestCase2<ImageProvider> {
         Assert.assertEquals(0, data.getCount());
     }
 
+    @Test
+    public void queryImageCategories_returnsCorrectCategories() {
+        getMockContentResolver().bulkInsert(ImageContract.CategoryEntry.CONTENT_URI, getValidCategories());
+        getMockContentResolver().bulkInsert(ImageContract.ImageEntry.CONTENT_URI, getValidImages());
+        getMockContentResolver().bulkInsert(ImageContract.ImageEntry.buildImageWithCategoriesUri(1),
+                getValidCategorizations());
+
+        getMockContentResolver().bulkInsert(ImageContract.ImageEntry.CONTENT_URI,
+                getValidImages());
+        getMockContentResolver().bulkInsert(ImageContract.CategoryEntry.CONTENT_URI,
+                getValidCategories());
+
+        Uri dataUri = ImageContract.ImageEntry.buildImageWithCategoriesUri(1);
+        Cursor data = getMockContentResolver().query(dataUri, new String[] { ImageContract.CategoryEntry.NAME }, null, null, null);
+        Assert.assertNotNull(data);
+        Assert.assertEquals(2, data.getCount());
+        data.moveToFirst();
+        Assert.assertEquals("landscape", data.getString(data.getColumnIndex(ImageContract.CategoryEntry.NAME)));
+        data.moveToNext();
+        Assert.assertEquals("sky", data.getString(data.getColumnIndex(ImageContract.CategoryEntry.NAME)));
+    }
 
     private ContentValues getValidCategory() {
         return getValidCategories()[0];
