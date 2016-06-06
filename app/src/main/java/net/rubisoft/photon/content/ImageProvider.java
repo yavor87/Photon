@@ -121,6 +121,12 @@ public class ImageProvider extends ContentProvider {
                     returnUri = ImageContract.CategoryEntry.buildCategoryUri(_id);
                 break;
             }
+            case CategoriesForImage : {
+                long _id = db.insert(ImageContract.CategorizedImageEntry.TABLE_NAME, null, values);
+                if (_id > 0)
+                    returnUri = ImageContract.ImageEntry.buildImageWithCategoriesUri(_id);
+                break;
+            }
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -220,12 +226,14 @@ public class ImageProvider extends ContentProvider {
     private Cursor getCategoriesForImage(Uri uri, String[] projection, String sortOrder) {
         SQLiteQueryBuilder builder = new SQLiteQueryBuilder();
         builder.setTables(ImageContract.CategorizedImageEntry.TABLE_NAME + " JOIN " +
-                ImageContract.CategoryEntry.TABLE_NAME + " USING (" +
-                ImageContract.CategorizedImageEntry.CATEGORY_ID + ")");
+                ImageContract.CategoryEntry.TABLE_NAME + " ON " +
+                ImageContract.CategorizedImageEntry.TABLE_NAME + "." +
+                ImageContract.CategorizedImageEntry.CATEGORY_ID + " = " +
+                ImageContract.CategoryEntry.TABLE_NAME + "." + ImageContract.CategoryEntry._ID);
 
         return builder.query(mOpenHelper.getReadableDatabase(), projection,
                 ImageContract.CategorizedImageEntry.IMAGE_ID + "=?",
-                new String[] { uri.getLastPathSegment() }, null, null, sortOrder);
+                new String[] { uri.getPathSegments().get(1) }, null, null, sortOrder);
     }
 
     static UriMatcher buildUriMatcher() {
