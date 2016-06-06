@@ -11,8 +11,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 public class ImageProvider extends ContentProvider {
-    private static final int Images = 100;
-    private static final int Image = 101;
     private static final int Categories = 200;
     private static final int Category = 201;
     private static final int CategoriesForImage = 300;
@@ -34,10 +32,6 @@ public class ImageProvider extends ContentProvider {
         final int match = sUriMatcher.match(uri);
 
         switch (match) {
-            case Images:
-                return ImageContract.ImageEntry.CONTENT_TYPE;
-            case Image:
-                return ImageContract.ImageEntry.CONTENT_ITEM_TYPE;
             case Categories:
                 return ImageContract.CategoryEntry.CONTENT_TYPE;
             case Category:
@@ -54,23 +48,6 @@ public class ImageProvider extends ContentProvider {
     public Cursor query(@NonNull Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
         Cursor retCursor;
         switch (sUriMatcher.match(uri)) {
-            // "image/#"
-            case Image: {
-                selection = ImageContract.ImageEntry._ID + "=?";
-                selectionArgs = new String[] { uri.getLastPathSegment() };
-            }
-            // "image"
-            case Images: {
-                retCursor = mOpenHelper.getReadableDatabase().query(
-                        ImageContract.ImageEntry.TABLE_NAME,
-                        projection,
-                        selection,
-                        selectionArgs,
-                        null,
-                        null,
-                        sortOrder);
-                break;
-            }
             // "category/#"
             case Category: {
                 selection = ImageContract.CategoryEntry._ID + "=?";
@@ -109,12 +86,6 @@ public class ImageProvider extends ContentProvider {
         Uri returnUri = null;
 
         switch (match) {
-            case Images: {
-                long _id = db.insert(ImageContract.ImageEntry.TABLE_NAME, null, values);
-                if (_id > 0 )
-                    returnUri = ImageContract.ImageEntry.buildImageUri(_id);
-                break;
-            }
             case Categories: {
                 long _id = db.insert(ImageContract.CategoryEntry.TABLE_NAME, null, values);
                 if (_id > 0)
@@ -124,7 +95,7 @@ public class ImageProvider extends ContentProvider {
             case CategoriesForImage : {
                 long _id = db.insert(ImageContract.CategorizedImageEntry.TABLE_NAME, null, values);
                 if (_id > 0)
-                    returnUri = ImageContract.ImageEntry.buildImageWithCategoriesUri(_id);
+                    returnUri = ImageContract.CategoryEntry.buildImageWithCategoriesUri(_id);
                 break;
             }
             default:
@@ -141,9 +112,7 @@ public class ImageProvider extends ContentProvider {
         final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
         final int match = sUriMatcher.match(uri);
         String tableName;
-        if (match == Images) {
-            tableName = ImageContract.ImageEntry.TABLE_NAME;
-        } else if (match == Categories) {
+        if (match == Categories) {
             tableName = ImageContract.CategoryEntry.TABLE_NAME;
         } else if (match == CategoriesForImage) {
             tableName = ImageContract.CategorizedImageEntry.TABLE_NAME;
@@ -174,16 +143,12 @@ public class ImageProvider extends ContentProvider {
         final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
 
         final int match = sUriMatcher.match(uri);
-        int rowsDeleted = -1;
+        int rowsDeleted;
 
         if (selection == null)
             selection = "1";
 
         switch (match) {
-            case Image : {
-                rowsDeleted = db.delete(ImageContract.ImageEntry.TABLE_NAME, selection, selectionArgs);
-                break;
-            }
             case Category : {
                 rowsDeleted = db.delete(ImageContract.CategoryEntry.TABLE_NAME, selection, selectionArgs);
                 break;
@@ -204,12 +169,8 @@ public class ImageProvider extends ContentProvider {
         final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
 
         final int match = sUriMatcher.match(uri);
-        int rowsUpdated = -1;
+        int rowsUpdated;
         switch (match) {
-            case Image : {
-                rowsUpdated = db.update(ImageContract.ImageEntry.TABLE_NAME, values, selection, selectionArgs);
-                break;
-            }
             case Category : {
                 rowsUpdated = db.update(ImageContract.CategoryEntry.TABLE_NAME, values, selection, selectionArgs);
                 break;
@@ -240,8 +201,6 @@ public class ImageProvider extends ContentProvider {
 
     static UriMatcher buildUriMatcher() {
         UriMatcher matcher = new UriMatcher(UriMatcher.NO_MATCH);
-        matcher.addURI(ImageContract.CONTENT_AUTHORITY, ImageContract.PATH_IMAGE, Images);
-        matcher.addURI(ImageContract.CONTENT_AUTHORITY, ImageContract.PATH_IMAGE + "/#", Image);
         matcher.addURI(ImageContract.CONTENT_AUTHORITY, ImageContract.PATH_IMAGE + "/#/categories", CategoriesForImage);
         matcher.addURI(ImageContract.CONTENT_AUTHORITY, ImageContract.PATH_CATEGORY, Categories);
         matcher.addURI(ImageContract.CONTENT_AUTHORITY, ImageContract.PATH_CATEGORY + "/#", Category);

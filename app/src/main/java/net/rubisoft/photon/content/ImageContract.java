@@ -31,28 +31,9 @@ public class ImageContract {
         public static Uri buildCategoryUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
-    }
-
-    public static class ImageEntry implements BaseColumns {
-        public static String TABLE_NAME = "images";
-
-        public static String IMAGE_URI = "uri";
-        public static String THUMBNAIL_URI = "thumb_uri";
-
-        public static final Uri CONTENT_URI =
-                BASE_CONTENT_URI.buildUpon().appendPath(PATH_IMAGE).build();
-
-        public static final String CONTENT_TYPE =
-                ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_IMAGE;
-        public static final String CONTENT_ITEM_TYPE =
-                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_IMAGE;
-
-        public static Uri buildImageUri(long id) {
-            return ContentUris.withAppendedId(CONTENT_URI, id);
-        }
 
         public static Uri buildImageWithCategoriesUri(long id) {
-            return ContentUris.withAppendedId(CONTENT_URI, id).buildUpon()
+            return BASE_CONTENT_URI.buildUpon().appendPath(PATH_IMAGE).appendPath(Long.toString(id))
                     .appendPath("categories").build();
         }
     }
