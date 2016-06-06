@@ -7,8 +7,7 @@ import android.net.Uri;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 import android.test.ProviderTestCase2;
-import android.test.mock.MockContentResolver;
-import android.util.Log;
+
 
 import net.rubisoft.photon.content.ImageContract;
 import net.rubisoft.photon.content.ImageProvider;
@@ -34,6 +33,41 @@ public class ImageProviderTest extends ProviderTestCase2<ImageProvider> {
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
+    }
+
+    @Test
+    public void getType_forCategory_returnsCorrectContentType() {
+        Uri uri = ImageContract.CategoryEntry.buildCategoryUri(1);
+        String type = getMockContentResolver().getType(uri);
+        Assert.assertEquals(ImageContract.CategoryEntry.CONTENT_ITEM_TYPE, type);
+    }
+
+    @Test
+    public void getType_forCategories_returnsCorrectContentType() {
+        Uri uri = ImageContract.CategoryEntry.CONTENT_URI;
+        String type = getMockContentResolver().getType(uri);
+        Assert.assertEquals(ImageContract.CategoryEntry.CONTENT_TYPE, type);
+    }
+
+    @Test
+    public void getType_forImage_returnsCorrectContentType() {
+        Uri uri = ImageContract.ImageEntry.buildImageUri(1);
+        String type = getMockContentResolver().getType(uri);
+        Assert.assertEquals(ImageContract.ImageEntry.CONTENT_ITEM_TYPE, type);
+    }
+
+    @Test
+    public void getType_forImages_returnsCorrectContentType() {
+        Uri uri = ImageContract.ImageEntry.CONTENT_URI;
+        String type = getMockContentResolver().getType(uri);
+        Assert.assertEquals(ImageContract.ImageEntry.CONTENT_TYPE, type);
+    }
+
+    @Test
+    public void getType_forImagesWithCategories_returnsCorrectContentType() {
+        Uri uri = ImageContract.ImageEntry.buildImageWithCategoriesUri(2);
+        String type = getMockContentResolver().getType(uri);
+        Assert.assertEquals(ImageContract.CategoryEntry.CONTENT_TYPE, type);
     }
 
     @Test
