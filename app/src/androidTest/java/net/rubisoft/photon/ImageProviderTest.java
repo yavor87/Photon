@@ -87,6 +87,22 @@ public class ImageProviderTest extends ProviderTestCase2<ImageProvider> {
     }
 
     @Test
+    public void insertingImage_insertsValidRecordInDB() {
+        Uri result = getMockContentResolver().insert(ImageContract.ImageEntry.CONTENT_URI,
+                getValidImage());
+
+        Assert.assertNotNull(result);
+        Cursor data = getMockContentResolver().query(result, null, null, null, null);
+        Assert.assertNotNull(data);
+        Assert.assertEquals(1, data.getCount());
+        data.moveToFirst();
+        Assert.assertEquals("file://local/img1.png",
+                data.getString(data.getColumnIndex(ImageContract.ImageEntry.IMAGE_URI)));
+        Assert.assertEquals(1,
+                data.getInt(data.getColumnIndex(ImageContract.ImageEntry._ID)));
+    }
+
+    @Test
     public void queryCategories_getsValidCategories() {
         getMockContentResolver().bulkInsert(ImageContract.CategoryEntry.CONTENT_URI,
                 getValidCategories());
@@ -124,6 +140,44 @@ public class ImageProviderTest extends ProviderTestCase2<ImageProvider> {
                 data.getInt(data.getColumnIndex(ImageContract.CategoryEntry._ID)));
     }
 
+    @Test
+    public void queryImages_getsValidImages() {
+        getMockContentResolver().bulkInsert(ImageContract.ImageEntry.CONTENT_URI,
+                getValidImages());
+
+        Uri dataUri = ImageContract.ImageEntry.CONTENT_URI;
+        Cursor data = getMockContentResolver().query(dataUri, null, null, null, null);
+        Assert.assertNotNull(data);
+        Assert.assertEquals(2, data.getCount());
+        data.moveToFirst();
+        Assert.assertEquals("file://local/img1.png",
+                data.getString(data.getColumnIndex(ImageContract.ImageEntry.IMAGE_URI)));
+        Assert.assertEquals(1,
+                data.getInt(data.getColumnIndex(ImageContract.ImageEntry._ID)));
+
+        data.moveToNext();
+        Assert.assertEquals("file://local/img2.png",
+                data.getString(data.getColumnIndex(ImageContract.ImageEntry.IMAGE_URI)));
+        Assert.assertEquals(2,
+                data.getInt(data.getColumnIndex(ImageContract.ImageEntry._ID)));
+    }
+
+    @Test
+    public void queryImage_getsValidImage() {
+        getMockContentResolver().bulkInsert(ImageContract.ImageEntry.CONTENT_URI,
+                getValidImages());
+
+        Uri dataUri = ImageContract.ImageEntry.buildImageUri(2);
+        Cursor data = getMockContentResolver().query(dataUri, null, null, null, null);
+        Assert.assertNotNull(data);
+        Assert.assertEquals(1, data.getCount());
+        data.moveToFirst();
+        Assert.assertEquals("file://local/img2.png",
+                data.getString(data.getColumnIndex(ImageContract.ImageEntry.IMAGE_URI)));
+        Assert.assertEquals(2,
+                data.getInt(data.getColumnIndex(ImageContract.ImageEntry._ID)));
+    }
+
     private ContentValues getValidCategory() {
         return getValidCategories()[0];
     }
@@ -135,6 +189,21 @@ public class ImageProviderTest extends ProviderTestCase2<ImageProvider> {
         values[0] = contentValues1;
         ContentValues contentValues2 = new ContentValues();
         contentValues2.put(ImageContract.CategoryEntry.NAME, "sky");
+        values[1] = contentValues2;
+        return values;
+    }
+
+    private ContentValues getValidImage() {
+        return getValidImages()[0];
+    }
+
+    private ContentValues[] getValidImages() {
+        ContentValues[] values = new ContentValues[2];
+        ContentValues contentValues1 = new ContentValues();
+        contentValues1.put(ImageContract.ImageEntry.IMAGE_URI, "file://local/img1.png");
+        values[0] = contentValues1;
+        ContentValues contentValues2 = new ContentValues();
+        contentValues2.put(ImageContract.ImageEntry.IMAGE_URI, "file://local/img2.png");
         values[1] = contentValues2;
         return values;
     }
