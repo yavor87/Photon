@@ -317,9 +317,11 @@ public class ImageProviderTest extends ProviderTestCase2<ImageProvider> {
     private ContentValues[] getValidImages() {
         ContentValues[] values = new ContentValues[2];
         ContentValues contentValues1 = new ContentValues();
+        contentValues1.put(ImageContract.ImageEntry._ID, 1);
         contentValues1.put(ImageContract.ImageEntry.IMAGE_URI, "file://local/img1.png");
         values[0] = contentValues1;
         ContentValues contentValues2 = new ContentValues();
+        contentValues2.put(ImageContract.ImageEntry._ID, 2);
         contentValues2.put(ImageContract.ImageEntry.IMAGE_URI, "file://local/img2.png");
         values[1] = contentValues2;
         return values;
