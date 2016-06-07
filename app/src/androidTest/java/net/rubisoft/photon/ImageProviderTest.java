@@ -110,7 +110,7 @@ public class ImageProviderTest extends ProviderTestCase2<ImageProvider> {
         getMockContentResolver().insert(ImageContract.ImageEntry.CONTENT_URI, getValidImage());
         getMockContentResolver().insert(ImageContract.CategoryEntry.CONTENT_URI, getValidCategory());
         Uri result = getMockContentResolver().insert(ImageContract.ImageEntry.buildImageWithCategoriesUri(1),
-                getValidCategorization());
+                getValidCategorization(1));
 
         Assert.assertNotNull(result);
         Cursor data = getMockContentResolver().query(result, null, null, null, null);
@@ -152,7 +152,7 @@ public class ImageProviderTest extends ProviderTestCase2<ImageProvider> {
         getMockContentResolver().bulkInsert(ImageContract.ImageEntry.CONTENT_URI, getValidImages());
 
         int result = getMockContentResolver().bulkInsert(ImageContract.ImageEntry.buildImageWithCategoriesUri(1),
-                getValidCategorizations());
+                getValidCategorizations(1));
 
         Assert.assertEquals(2, result);
     }
@@ -245,6 +245,43 @@ public class ImageProviderTest extends ProviderTestCase2<ImageProvider> {
     }
 
     @Test
+    public void queryUncategorizedImages_afterCategorizing1Image_getsSingleImage() {
+        getMockContentResolver().bulkInsert(ImageContract.ImageEntry.CONTENT_URI,
+                getValidImages());
+        getMockContentResolver().bulkInsert(ImageContract.CategoryEntry.CONTENT_URI,
+                getValidCategories());
+        getMockContentResolver().insert(ImageContract.ImageEntry.buildImageWithCategoriesUri(1),
+                getValidCategorization(1));
+
+        Uri dataUri = ImageContract.ImageEntry.uncategorizedImagesUri();
+        Cursor data = getMockContentResolver().query(dataUri, null, null, null, null);
+        Assert.assertNotNull(data);
+        Assert.assertEquals(1, data.getCount());
+        data.moveToFirst();
+        Assert.assertEquals("file://local/img2.png",
+                data.getString(data.getColumnIndex(ImageContract.ImageEntry.IMAGE_URI)));
+        Assert.assertEquals(2,
+                data.getInt(data.getColumnIndex(ImageContract.ImageEntry._ID)));
+    }
+
+    @Test
+    public void queryUncategorizedImages_afterCategorizingAllImages_getsNoImages() {
+        getMockContentResolver().bulkInsert(ImageContract.ImageEntry.CONTENT_URI,
+                getValidImages());
+        getMockContentResolver().bulkInsert(ImageContract.CategoryEntry.CONTENT_URI,
+                getValidCategories());
+        getMockContentResolver().insert(ImageContract.ImageEntry.buildImageWithCategoriesUri(1),
+                getValidCategorization(1));
+        getMockContentResolver().insert(ImageContract.ImageEntry.buildImageWithCategoriesUri(2),
+                getValidCategorization(2));
+
+        Uri dataUri = ImageContract.ImageEntry.uncategorizedImagesUri();
+        Cursor data = getMockContentResolver().query(dataUri, null, null, null, null);
+        Assert.assertNotNull(data);
+        Assert.assertEquals(0, data.getCount());
+    }
+
+    @Test
     public void queryImage_getsValidImage() {
         getMockContentResolver().bulkInsert(ImageContract.ImageEntry.CONTENT_URI,
                 getValidImages());
@@ -278,7 +315,7 @@ public class ImageProviderTest extends ProviderTestCase2<ImageProvider> {
         getMockContentResolver().bulkInsert(ImageContract.CategoryEntry.CONTENT_URI, getValidCategories());
         getMockContentResolver().bulkInsert(ImageContract.ImageEntry.CONTENT_URI, getValidImages());
         getMockContentResolver().bulkInsert(ImageContract.ImageEntry.buildImageWithCategoriesUri(1),
-                getValidCategorizations());
+                getValidCategorizations(1));
 
         getMockContentResolver().bulkInsert(ImageContract.ImageEntry.CONTENT_URI,
                 getValidImages());
@@ -327,20 +364,20 @@ public class ImageProviderTest extends ProviderTestCase2<ImageProvider> {
         return values;
     }
 
-    private ContentValues getValidCategorization() {
-        return getValidCategorizations()[0];
+    private ContentValues getValidCategorization(int imageId) {
+        return getValidCategorizations(imageId)[0];
     }
 
-    private ContentValues[] getValidCategorizations() {
+    private ContentValues[] getValidCategorizations(int imageId) {
         ContentValues[] values = new ContentValues[2];
         ContentValues contentValues1 = new ContentValues();
         contentValues1.put(ImageContract.CategorizedImageEntry.CATEGORY_ID, 1);
-        contentValues1.put(ImageContract.CategorizedImageEntry.IMAGE_ID, 1);
+        contentValues1.put(ImageContract.CategorizedImageEntry.IMAGE_ID, imageId);
         contentValues1.put(ImageContract.CategorizedImageEntry.CONFIDENCE, 0.6);
         values[0] = contentValues1;
         ContentValues contentValues2 = new ContentValues();
         contentValues2.put(ImageContract.CategorizedImageEntry.CATEGORY_ID, 2);
-        contentValues2.put(ImageContract.CategorizedImageEntry.IMAGE_ID, 1);
+        contentValues2.put(ImageContract.CategorizedImageEntry.IMAGE_ID, imageId);
         contentValues2.put(ImageContract.CategorizedImageEntry.CONFIDENCE, 0.4);
         values[1] = contentValues2;
         return values;
