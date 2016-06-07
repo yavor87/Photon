@@ -22,6 +22,8 @@ public class HttpUtils {
         conn.setReadTimeout(READ_TIMEOUT);
         conn.setRequestMethod("POST");
         conn.addRequestProperty("Authorization", "Basic " + token);
+        conn.setRequestProperty(data.getContentType().getName(), data.getContentType().getValue());
+        conn.setRequestProperty("Content-Length", String.valueOf(data.getContentLength()));
         conn.setDoInput(true);
         conn.setDoOutput(true);
         conn.setUseCaches(false);

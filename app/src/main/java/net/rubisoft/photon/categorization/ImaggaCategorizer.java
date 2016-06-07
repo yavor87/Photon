@@ -1,9 +1,11 @@
 package net.rubisoft.photon.categorization;
 
 import android.net.Uri;
+import android.support.annotation.Nullable;
 
 import net.rubisoft.photon.HttpUtils;
 
+import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.FileBody;
 import org.json.JSONArray;
@@ -28,9 +30,12 @@ public class ImaggaCategorizer implements Categorizer {
         mWebSchemes = schemes;
     }
 
-    static String key = "";
+    static final String CATEGORIZATION_ENDPOINT = "https://api.imagga.com/v1/categorizations/";
+    static final String CONTENT_ENDPOINT = "https://api.imagga.com/v1/content";
+    static final String SELECTED_CATEGORIZER = "personal_photos";
+    static final String key = "";
     static ImaggaCategorizer mInstance;
-    static Set<String> mWebSchemes;
+    static final Set<String> mWebSchemes;
 
     public static ImaggaCategorizer getInstance() {
         if (mInstance == null)
@@ -86,30 +91,32 @@ public class ImaggaCategorizer implements Categorizer {
 
     @Override
     public List<Categorization> categorizeImage(Uri image) {
-        boolean hostedOnImagga = false;
+        ContentIdentificator identificator;
         if (!mWebSchemes.contains(image.getScheme())) {
             // upload
-            image = uploadImage(image);
-            hostedOnImagga = true;
+            identificator = new InternalContentIdentificator(uploadImage(image));
+        } else {
+            identificator = new WebContentIdentificator(image);
         }
 
-        List<Categorization> categorizations = categorize(image);
+        List<Categorization> categorizations = categorize(identificator);
         // store categorization info
 
 
-        if (hostedOnImagga) {
-            deleteImage(image);
+        if (identificator instanceof InternalContentIdentificator) {
+            deleteImage(((InternalContentIdentificator) identificator).getId());
         }
         return categorizations;
     }
 
-    private Uri uploadImage(Uri file) {
-        MultipartEntity data = new MultipartEntity();
+    @Nullable
+    private String uploadImage(Uri file) {
+        MultipartEntity data = new MultipartEntity(HttpMultipartMode.STRICT);
         data.addPart("image", new FileBody(new File(file.getPath())));
 
         HttpUtils.HttpResponse response;
         try {
-            response = HttpUtils.postUpload("https://api.imagga.com/v1/content", key, data);
+            response = HttpUtils.postUpload(CONTENT_ENDPOINT, key, data);
         } catch (IOException e) {
             e.printStackTrace();
             return null;
@@ -121,11 +128,7 @@ public class ImaggaCategorizer implements Categorizer {
                 if (result.getString("status").equals("success")) {
                     JSONObject uploadedObj = (JSONObject) result.getJSONArray("uploaded").get(0);
                     if (uploadedObj != null) {
-                        return new Uri.Builder()
-                                .scheme("https")
-                                .authority("api.imagga.com/v1/content/")
-                                .path(uploadedObj.getString("id"))
-                                .build();
+                        return uploadedObj.getString("id");
                     }
                 }
             } catch (JSONException e) {
@@ -136,13 +139,12 @@ public class ImaggaCategorizer implements Categorizer {
         return null;
     }
 
-    private List<Categorization> categorize(Uri image) {
+    @Nullable
+    private List<Categorization> categorize(ContentIdentificator identificator) {
         HttpUtils.HttpResponse response;
-        Uri categorizationCall =  new Uri.Builder()
-                .scheme("https")
-                .authority("api.imagga.com")
-                .appendPath("v1").appendPath("categorizations").appendPath("personal_photos")
-                .encodedQuery("url=" + image.toString())
+        Uri categorizationCall = Uri.parse(CATEGORIZATION_ENDPOINT).buildUpon()
+                .appendPath(SELECTED_CATEGORIZER)
+                .encodedQuery(identificator.build())
                 .build();
 
         try {
@@ -169,15 +171,50 @@ public class ImaggaCategorizer implements Categorizer {
         return categorizations;
     }
 
-    private boolean deleteImage(Uri imageUri) {
+    private boolean deleteImage(String id) {
         HttpUtils.HttpResponse response;
         try {
-            response = HttpUtils.delete(imageUri.toString(), key);
+            response = HttpUtils.delete(Uri.parse(CONTENT_ENDPOINT)
+                    .buildUpon().appendPath(id).toString(), key);
         } catch (IOException e) {
             e.printStackTrace();
             return false;
         }
 
         return response.ResponseCode == 200;
+    }
+
+    private interface ContentIdentificator {
+        String build();
+    }
+
+    private class WebContentIdentificator implements ContentIdentificator {
+        public WebContentIdentificator(Uri uri) {
+            mUri = uri;
+        }
+
+        private Uri mUri;
+
+        @Override
+        public String build() {
+            return "url=" + mUri.toString();
+        }
+    }
+
+    private class InternalContentIdentificator implements ContentIdentificator {
+        public InternalContentIdentificator(String id) {
+            mId = id;
+        }
+
+        private String mId;
+
+        public String getId() {
+            return mId;
+        }
+
+        @Override
+        public String build() {
+            return "content=" + mId;
+        }
     }
 }
