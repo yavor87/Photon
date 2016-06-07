@@ -26,8 +26,5 @@ public class PhotonApp extends Application {
 
         cacheServiceIntent.putExtra(CacheService.MODE_KEY, mode);
         startService(cacheServiceIntent);
-
-        // TODO: This service should be run when on Wifi
-        startService(new Intent(this, CategorizationService.class));
     }
 }

@@ -48,6 +48,11 @@ public class CategorizationService extends IntentService {
         if (cursor == null)
             return;
 
+        if (cursor.getCount() == 0) {
+            Log.v(LOG_TAG, "Nothing to categorize");
+            return;
+        }
+
         int categorizedCount = 0;
         try {
             while (cursor.moveToNext()) {

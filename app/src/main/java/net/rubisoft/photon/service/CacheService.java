@@ -23,6 +23,7 @@ public class CacheService extends IntentService {
         super("CacheService");
     }
 
+    public static String BROADCAST_ACTION = "net.rubisoft.photon.service.CACHING_COMPLETE";
     public static String MODE_KEY = "mode";
     public static int MODE_IMAGES = 1;
     public static int MODE_CATEGORIES = 2;
@@ -39,6 +40,8 @@ public class CacheService extends IntentService {
         if ((mode & MODE_CATEGORIES) == MODE_CATEGORIES) {
             cacheCategories();
         }
+
+        sendBroadcast(new Intent(BROADCAST_ACTION));
     }
 
     private void cacheImages() {
