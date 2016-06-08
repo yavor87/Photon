@@ -12,8 +12,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 public class HttpUtils {
-    private static final int CONNECTION_TIMEOUT = 3000;
-    private static final int READ_TIMEOUT = 3000;
+    private static final int CONNECTION_TIMEOUT = 30000;
+    private static final int READ_TIMEOUT = 30000;
 
     public static HttpResponse postUpload(String address, String token, MultipartEntity data) throws IOError, IOException {
         URL url = new URL(address);

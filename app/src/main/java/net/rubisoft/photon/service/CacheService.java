@@ -1,14 +1,17 @@
 package net.rubisoft.photon.service;
 
+import android.Manifest;
 import android.app.IntentService;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
 import net.rubisoft.photon.categorization.Categorizer;
@@ -45,6 +48,10 @@ public class CacheService extends IntentService {
     }
 
     private void cacheImages() {
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
+            return;
+
         ImageIterator imageIterator = new ImageIterator(this);
         SQLiteDatabase db = new ImagesCacheDBHelper(this).getWritableDatabase();
         try {

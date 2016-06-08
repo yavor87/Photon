@@ -30,6 +30,7 @@ public class ImaggaCategorizer implements Categorizer {
         mWebSchemes = schemes;
     }
 
+    static final String CATEGORIZERS_ENDPOINT = "https://api.imagga.com/v1/categorizers";
     static final String CATEGORIZATION_ENDPOINT = "https://api.imagga.com/v1/categorizations/";
     static final String CONTENT_ENDPOINT = "https://api.imagga.com/v1/content";
     static final String SELECTED_CATEGORIZER = "personal_photos";
@@ -50,14 +51,9 @@ public class ImaggaCategorizer implements Categorizer {
             throw new AssertionError("Imagga key is empty");
 
         HttpUtils.HttpResponse response;
-        Uri categorizationCall =  new Uri.Builder()
-                .scheme("https")
-                .authority("api.imagga.com")
-                .appendPath("v1").appendPath("categorizers")
-                .build();
 
         try {
-            response = HttpUtils.get(categorizationCall.toString(), key);
+            response = HttpUtils.get(CATEGORIZERS_ENDPOINT, key);
         } catch (IOException e) {
             e.printStackTrace();
             return null;
@@ -154,10 +150,17 @@ public class ImaggaCategorizer implements Categorizer {
             return null;
         }
 
+        if (response.ResponseCode != 200)
+            return null;
+
         ArrayList<Categorizer.Categorization> categorizations = null;
         try {
-            JSONObject result = (JSONObject) new JSONObject(response.Content)
-                    .getJSONArray("results").get(0);
+            JSONArray resultsArr = new JSONObject(response.Content)
+                    .getJSONArray("results");
+            if (resultsArr == null || resultsArr.length() == 0)
+                return null;
+
+            JSONObject result = (JSONObject) resultsArr.get(0);
             JSONArray categories = result.getJSONArray("categories");
             categorizations = new ArrayList<>();
             for (int i = 0; i < categories.length(); i++) {

@@ -36,7 +36,7 @@ public class CategorizationService extends IntentService {
         // get image File from intent
         if (mCategoryMap == null) {
             populateCategoryMap();
-            if (mCategoryMap == null) {
+            if (mCategoryMap == null || mCategoryMap.size() == 0) {
                 Log.e(LOG_TAG, "Can't create category map! Stopping");
                 return;
             }
@@ -60,6 +60,9 @@ public class CategorizationService extends IntentService {
                 String imageUri = cursor.getString(COL_URI);
                 List<Categorizer.Categorization> categories = mCategorizer.categorizeImage(
                         Uri.parse(imageUri));
+
+                if (categories == null)
+                    return;
 
                 ContentValues[] contentValues = new ContentValues[categories.size()];
                 int i = 0;
