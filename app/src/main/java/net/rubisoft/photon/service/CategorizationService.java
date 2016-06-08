@@ -69,9 +69,9 @@ public class CategorizationService extends IntentService {
             while (cursor.moveToNext()) {
                 // Display notification
                 builder.setSmallIcon(R.drawable.camera)
-                        .setContentTitle("Categorizing images")
-                        .setContentText("Categorizing image " + (categorizedCount + 1) +
-                                " of " + uncategorizedImages);
+                        .setContentTitle(getString(R.string.categorization_notification_title))
+                        .setContentText(getString(R.string.categorization_notification_text,
+                                categorizedCount + 1, uncategorizedImages));
                 mNotificationManager.notify(CATEGORIZATION_NOTIFICATION, builder.build());
 
                 int imageId = cursor.getInt(COL_ID);
@@ -103,8 +103,8 @@ public class CategorizationService extends IntentService {
             cursor.close();
         }
 
-        builder.setContentTitle("Categorization complete")
-                .setContentText(categorizedCount + " images categorized");
+        builder.setContentTitle(getString(R.string.categorization_done_notification_title))
+                .setContentText(getString(R.string.categorization_done_notification_text, categorizedCount));
         mNotificationManager.notify(CATEGORIZATION_NOTIFICATION, builder.build());
 
         Log.v(LOG_TAG, "Categorized " + categorizedCount + " images");

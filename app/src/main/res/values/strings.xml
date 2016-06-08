@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Photon</string>
+    <string name="categorization_notification_title">Categorizing images</string>
+    <string name="categorization_notification_text">Categorizing image %1$d of %2$d</string>
+    <string name="categorization_done_notification_title">Categorization complete</string>
+    <string name="categorization_done_notification_text">%1$d images categorized</string>
 </resources>
