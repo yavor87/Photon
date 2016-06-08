@@ -62,15 +62,14 @@ public class CategorizationService extends IntentService {
         }
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
-                .setSmallIcon(R.drawable.camera);
+                .setSmallIcon(R.drawable.camera)
+                .setContentTitle(getString(R.string.categorization_notification_title));
 
         int categorizedCount = 0;
         try {
             while (cursor.moveToNext()) {
                 // Display notification
-                builder.setSmallIcon(R.drawable.camera)
-                        .setContentTitle(getString(R.string.categorization_notification_title))
-                        .setContentText(getString(R.string.categorization_notification_text,
+                builder.setContentText(getString(R.string.categorization_notification_text,
                                 categorizedCount + 1, uncategorizedImages));
                 mNotificationManager.notify(CATEGORIZATION_NOTIFICATION, builder.build());
 
@@ -79,25 +78,23 @@ public class CategorizationService extends IntentService {
                 List<Categorizer.Categorization> categories = mCategorizer.categorizeImage(
                         Uri.parse(imageUri));
 
-                if (categories == null)
-                    return;
+                if (categories != null) {
+                    ContentValues[] contentValues = new ContentValues[categories.size()];
+                    int i = 0;
+                    for (Categorizer.Categorization categorization : categories) {
+                        ContentValues values = new ContentValues();
+                        values.put(ImageContract.CategorizedImageEntry.IMAGE_ID, imageId);
+                        values.put(ImageContract.CategorizedImageEntry.CATEGORY_ID,
+                                mCategoryMap.get(categorization.getCategory()));
+                        values.put(ImageContract.CategorizedImageEntry.CONFIDENCE,
+                                categorization.getConfidence());
+                        contentValues[i++] = values;
+                    }
 
-                ContentValues[] contentValues = new ContentValues[categories.size()];
-                int i = 0;
-                for (Categorizer.Categorization categorization : categories) {
-                    ContentValues values = new ContentValues();
-                    values.put(ImageContract.CategorizedImageEntry.IMAGE_ID, imageId);
-                    values.put(ImageContract.CategorizedImageEntry.CATEGORY_ID,
-                            mCategoryMap.get(categorization.getCategory()));
-                    values.put(ImageContract.CategorizedImageEntry.CONFIDENCE,
-                            categorization.getConfidence());
-                    contentValues[i++] = values;
+                    Uri insertUri = ImageContract.ImageEntry.buildImageWithCategoriesUri(imageId);
+                    getContentResolver().bulkInsert(insertUri, contentValues);
+                    categorizedCount++;
                 }
-
-                Uri insertUri = ImageContract.ImageEntry.buildImageWithCategoriesUri(imageId);
-                getContentResolver().bulkInsert(insertUri, contentValues);
-
-                categorizedCount++;
             }
         } finally {
             cursor.close();
