@@ -52,8 +52,10 @@ public class CategorizationService extends IntentService {
         Cursor cursor = getContentResolver().query(ImageContract.ImageEntry.uncategorizedImagesUri(),
                 PROJECTION, null, null, null);
 
-        if (cursor == null)
+        if (cursor == null) {
+            Log.v(LOG_TAG, "Nothing to categorize");
             return;
+        }
 
         int uncategorizedImages = cursor.getCount();
         if (uncategorizedImages == 0) {
