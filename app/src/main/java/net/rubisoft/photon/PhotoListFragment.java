@@ -15,6 +15,7 @@ import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.GridView;
 
 import net.rubisoft.photon.content.ImageContract;
@@ -42,6 +43,7 @@ public class PhotoListFragment extends Fragment implements LoaderManager.LoaderC
     static final int COL_THUMB_URI = 1;
     static final int COL_IMAGE_URI = 2;
 
+    private OnImageSelectedListener mListener;
     private ImageGridViewAdapter mImageAdapter;
     private static final int READ_EXTERNAL_STORAGE_PERMISSION_REQUEST = 101;
 
@@ -55,6 +57,15 @@ public class PhotoListFragment extends Fragment implements LoaderManager.LoaderC
         } else {
             requestPermissions(new String[] { Manifest.permission.READ_EXTERNAL_STORAGE },
                     READ_EXTERNAL_STORAGE_PERMISSION_REQUEST);
+        }
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+
+        if (context instanceof OnImageSelectedListener) {
+            mListener = (OnImageSelectedListener) context;
         }
     }
 
@@ -73,6 +84,14 @@ public class PhotoListFragment extends Fragment implements LoaderManager.LoaderC
         GridView gridView = (GridView) view.findViewById(R.id.list);
         mImageAdapter = new ImageGridViewAdapter(getContext(), null, 0);
         gridView.setAdapter(mImageAdapter);
+        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Cursor cursor = (Cursor) parent.getItemAtPosition(position);
+                if (mListener != null)
+                    mListener.onItemSelected(cursor.getInt(COL_IMAGE_ID));
+            }
+        });
         return view;
     }
 
@@ -90,5 +109,9 @@ public class PhotoListFragment extends Fragment implements LoaderManager.LoaderC
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
         mImageAdapter.swapCursor(null);
+    }
+
+    public interface OnImageSelectedListener {
+        void onItemSelected(int imageId);
     }
 }

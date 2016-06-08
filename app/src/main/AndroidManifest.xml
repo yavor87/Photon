@@ -21,14 +21,18 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".service.CategorizationService"
+        <activity android:name=".DetailActivity" android:parentActivityName=".MainActivity" />
+
+        <service
+            android:name=".service.CategorizationService"
             android:exported="false" />
-        <service android:name=".service.CacheService"
+        <service
+            android:name=".service.CacheService"
             android:exported="false" />
 
         <provider
-            android:authorities="net.rubisoft.photon"
             android:name=".content.ImageProvider"
+            android:authorities="net.rubisoft.photon"
             android:exported="false" />
 
         <receiver android:name=".service.CategorizationWatcher">
