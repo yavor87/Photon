@@ -101,7 +101,8 @@ public class CategorizationService extends IntentService {
         }
 
         builder.setContentTitle(getString(R.string.categorization_done_notification_title))
-                .setContentText(getString(R.string.categorization_done_notification_text, categorizedCount));
+                .setContentText(getResources().getQuantityString
+                        (R.plurals.categorization_done_notification_text, categorizedCount, categorizedCount));
         mNotificationManager.notify(CATEGORIZATION_NOTIFICATION, builder.build());
 
         Log.v(LOG_TAG, "Categorized " + categorizedCount + " images");
