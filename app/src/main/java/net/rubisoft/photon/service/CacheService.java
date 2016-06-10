@@ -8,7 +8,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
@@ -16,8 +15,6 @@ import android.util.Log;
 import net.rubisoft.photon.categorization.Categorizer;
 import net.rubisoft.photon.categorization.ImaggaCategorizer;
 import net.rubisoft.photon.content.ImageContract;
-
-import java.util.Iterator;
 
 public class CacheService extends IntentService {
     public CacheService() {
@@ -50,22 +47,10 @@ public class CacheService extends IntentService {
                 Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
             return;
 
-        ImageIterator imageIterator = new ImageIterator(this);
-        try {
-            ContentResolver resolver = getContentResolver();
-            int stored = 0;
-            while (imageIterator.hasNext()) {
-                ContentValues value = imageIterator.next();
-                Uri row = resolver.insert(ImageContract.ImageEntry.CONTENT_URI, value);
-                if (row != null) {
-                    stored++;
-                } else {
-                    break;
-                }
-            }
+        ContentValues[] values = getImages(this);
+        if (values != null) {
+            int stored = getContentResolver().bulkInsert(ImageContract.ImageEntry.CONTENT_URI, values);
             Log.v(LOG_TAG, "Stored " + stored + " images in db");
-        } finally {
-            imageIterator.close();
         }
     }
 
@@ -85,62 +70,57 @@ public class CacheService extends IntentService {
         Log.v(LOG_TAG, "Stored " + stored + " categories in db");
     }
 
-    private class ImageIterator implements Iterator<ContentValues> {
-        public ImageIterator(Context context) {
-            mResolver = context.getContentResolver();
-            mImageCursor = mResolver.query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                    projection,
-                    null,
-                    null,
-                    MediaStore.Images.Media.DEFAULT_SORT_ORDER);
-        }
-
-        ContentResolver mResolver;
-        final Cursor mImageCursor;
+    private ContentValues[] getImages(Context context) {
         final String[] projection = { MediaStore.Images.Media.DATA, MediaStore.Images.Media._ID, };
         final String[] thumb_projection = { MediaStore.Images.Thumbnails.DATA };
         final int COL_DATA = 0;
         final int COL_ID = 1;
         final int COL_THUMB_DATA = 0;
 
-        public void close() {
-            mImageCursor.close();
-        }
+        ContentResolver resolver = context.getContentResolver();
+        Cursor imageCursor = resolver.query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                projection,
+                null,
+                null,
+                MediaStore.Images.Media.DEFAULT_SORT_ORDER);
+        if (imageCursor == null)
+            return null;
 
-        @Override
-        public boolean hasNext() {
-            return mImageCursor.moveToNext();
-        }
+        try {
+            int count = imageCursor.getCount();
+            if (count == 0)
+                return null;
 
-        @Override
-        public ContentValues next() {
-            int imageId = mImageCursor.getInt(COL_ID);
-            ContentValues values = new ContentValues();
-            values.put(ImageContract.ImageEntry._ID, imageId);
-            values.put(ImageContract.ImageEntry.IMAGE_URI, "file:" + mImageCursor.getString(COL_DATA));
+            ContentValues[] valuesArr = new ContentValues[count];
+            int i = 0;
+            while (imageCursor.moveToNext()) {
+                int imageId = imageCursor.getInt(COL_ID);
+                ContentValues values = new ContentValues();
+                values.put(ImageContract.ImageEntry._ID, imageId);
+                values.put(ImageContract.ImageEntry.IMAGE_URI, "file:" + imageCursor.getString(COL_DATA));
 
-            // Obtain thumbnail
-            Cursor thumbnail = mResolver.query(MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI,
-                    thumb_projection,
-                    MediaStore.Images.Thumbnails.IMAGE_ID + "=?",
-                    new String[]{ Integer.toString(imageId) }, null);
-            try {
-                if (thumbnail != null && thumbnail.moveToFirst()) {
-                    values.put(ImageContract.ImageEntry.THUMBNAIL_URI, "file:" +
-                            thumbnail.getString(COL_THUMB_DATA));
+                // Obtain thumbnail
+                Cursor thumbnail = resolver.query(MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI,
+                        thumb_projection,
+                        MediaStore.Images.Thumbnails.IMAGE_ID + "=?",
+                        new String[]{Integer.toString(imageId)}, null);
+                try {
+                    if (thumbnail != null && thumbnail.moveToFirst()) {
+                        values.put(ImageContract.ImageEntry.THUMBNAIL_URI, "file:" +
+                                thumbnail.getString(COL_THUMB_DATA));
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    thumbnail.close();
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }finally {
-                thumbnail.close();
+
+                valuesArr[i++] = values;
             }
 
-            return values;
-        }
-
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException();
+            return valuesArr;
+        } finally {
+            imageCursor.close();
         }
     }
 }
