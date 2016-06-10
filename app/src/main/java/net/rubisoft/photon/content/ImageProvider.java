@@ -9,8 +9,10 @@ import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 public class ImageProvider extends ContentProvider {
+    private static final String LOG_TAG = ImageProvider.class.getSimpleName();
     private static final int Images = 100;
     private static final int Image = 101;
     private static final int UncategorizedImages = 111;
@@ -60,6 +62,8 @@ public class ImageProvider extends ContentProvider {
     @Nullable
     @Override
     public Cursor query(@NonNull Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
+        Log.v(LOG_TAG, "query " + uri.toString());
+
         Cursor retCursor;
         switch (sUriMatcher.match(uri)) {
             // "image/#"
@@ -132,6 +136,8 @@ public class ImageProvider extends ContentProvider {
     @Nullable
     @Override
     public Uri insert(@NonNull Uri uri, ContentValues values) {
+        Log.v(LOG_TAG, "insert " + uri.toString());
+
         final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
         final int match = sUriMatcher.match(uri);
         Uri returnUri = null;
@@ -166,6 +172,8 @@ public class ImageProvider extends ContentProvider {
 
     @Override
     public int bulkInsert(@NonNull Uri uri, @NonNull ContentValues[] values) {
+        Log.v(LOG_TAG, "bulkInsert " + uri.toString() + " " + values.length + " values");
+
         final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
         final int match = sUriMatcher.match(uri);
         String tableName;
@@ -200,6 +208,8 @@ public class ImageProvider extends ContentProvider {
 
     @Override
     public int delete(@NonNull Uri uri, String selection, String[] selectionArgs) {
+        Log.v(LOG_TAG, "delete " + uri.toString());
+
         final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
 
         final int match = sUriMatcher.match(uri);
@@ -230,6 +240,8 @@ public class ImageProvider extends ContentProvider {
 
     @Override
     public int update(@NonNull Uri uri, ContentValues values, String selection, String[] selectionArgs) {
+        Log.v(LOG_TAG, "update " + uri.toString());
+
         final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
 
         final int match = sUriMatcher.match(uri);
