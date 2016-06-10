@@ -98,7 +98,7 @@ public class CacheService extends IntentService {
                 int imageId = imageCursor.getInt(COL_ID);
                 ContentValues values = new ContentValues();
                 values.put(ImageContract.ImageEntry._ID, imageId);
-                values.put(ImageContract.ImageEntry.DATE_TAKEN, imageCursor.getInt(COL_DATA));
+                values.put(ImageContract.ImageEntry.DATE_TAKEN, imageCursor.getLong(COL_TAKEN));
                 values.put(ImageContract.ImageEntry.IMAGE_URI, "file:" + imageCursor.getString(COL_DATA));
 
                 // Obtain thumbnail
