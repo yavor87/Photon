@@ -28,9 +28,9 @@ public class ImageFragment extends Fragment implements LoaderManager.LoaderCallb
     private static final String[] IMAGE_PROJECTION = { ImageContract.ImageEntry.IMAGE_URI };
     private static final String[] IMAGE_CATEGORY_PROJECTION = { ImageContract.CategoryEntry._ID, ImageContract.CategoryEntry.NAME, ImageContract.CategorizedImageEntry.CONFIDENCE };
     static final int COL_IMAGE_URI = 0;
-    static final int COL_CATEGORI_ID = 0;
-    static final int COL_CATEGORI_NAME = 1;
-    static final int COL_CATEGORI_CONFIDENCE = 2;
+    static final int COL_CATEGORY_ID = 0;
+    static final int COL_CATEGORY_NAME = 1;
+    static final int COL_CATEGORY_CONFIDENCE = 2;
 
     private int mImageID;
     private ImageView mImageView;
