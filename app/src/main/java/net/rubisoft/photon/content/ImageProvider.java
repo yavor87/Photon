@@ -109,7 +109,16 @@ public class ImageProvider extends ContentProvider {
             }
             // "image/#/categories"
             case CategoriesForImage: {
-                retCursor = getCategoriesForImage(uri, projection, sortOrder);
+                selection = ImageContract.CategorizedImageEntry.IMAGE_ID + "=?";
+                selectionArgs = new String[] { uri.getPathSegments().get(1) };
+                retCursor = mOpenHelper.getReadableDatabase().query(
+                        ImageContract.ImageEntry.CATEGORIES_VIEW_NAME,
+                        projection,
+                        selection,
+                        selectionArgs,
+                        null,
+                        null,
+                        sortOrder);
                 break;
             }
 
@@ -243,19 +252,6 @@ public class ImageProvider extends ContentProvider {
         }
         db.close();
         return rowsUpdated;
-    }
-
-    private Cursor getCategoriesForImage(Uri uri, String[] projection, String sortOrder) {
-        SQLiteQueryBuilder builder = new SQLiteQueryBuilder();
-        builder.setTables(ImageContract.CategorizedImageEntry.TABLE_NAME + " JOIN " +
-                ImageContract.CategoryEntry.TABLE_NAME + " ON " +
-                ImageContract.CategorizedImageEntry.TABLE_NAME + "." +
-                ImageContract.CategorizedImageEntry.CATEGORY_ID + " = " +
-                ImageContract.CategoryEntry.TABLE_NAME + "." + ImageContract.CategoryEntry._ID);
-
-        return builder.query(mOpenHelper.getReadableDatabase(), projection,
-                ImageContract.CategorizedImageEntry.IMAGE_ID + "=?",
-                new String[] { uri.getPathSegments().get(1) }, null, null, sortOrder);
     }
 
     static UriMatcher buildUriMatcher() {

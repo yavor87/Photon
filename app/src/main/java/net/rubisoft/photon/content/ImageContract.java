@@ -36,6 +36,7 @@ public class ImageContract {
 
     public static class ImageEntry implements BaseColumns {
         public static String TABLE_NAME = "images";
+        public static String CATEGORIES_VIEW_NAME = "image_categories";
 
         public static String IMAGE_URI = "uri";
         public static String THUMBNAIL_URI = "thumb_uri";

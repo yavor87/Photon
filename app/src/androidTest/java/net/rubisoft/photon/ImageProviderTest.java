@@ -117,14 +117,7 @@ public class ImageProviderTest extends ProviderTestCase2<ImageProvider> {
         Assert.assertNotNull(data);
         Assert.assertEquals(1, data.getCount());
         data.moveToFirst();
-        Assert.assertEquals(1,
-                data.getInt(data.getColumnIndex(ImageContract.CategorizedImageEntry.IMAGE_ID)));
-        Assert.assertEquals(1,
-                data.getInt(data.getColumnIndex(ImageContract.CategorizedImageEntry.CATEGORY_ID)));
-        Assert.assertEquals(0.6, data.getFloat(
-                data.getColumnIndex(ImageContract.CategorizedImageEntry.CONFIDENCE)), 0.001);
-        Assert.assertEquals(1,
-                data.getInt(data.getColumnIndex(ImageContract.ImageEntry._ID)));
+        testImageCategories(data, 1, 1, "landscape", 0.6f);
     }
 
     //
@@ -323,13 +316,36 @@ public class ImageProviderTest extends ProviderTestCase2<ImageProvider> {
                 getValidCategories());
 
         Uri dataUri = ImageContract.ImageEntry.buildImageWithCategoriesUri(1);
-        Cursor data = getMockContentResolver().query(dataUri, new String[] { ImageContract.CategoryEntry.NAME }, null, null, null);
+        Cursor data = getMockContentResolver().query(dataUri, null, null, null, null);
         Assert.assertNotNull(data);
         Assert.assertEquals(2, data.getCount());
         data.moveToFirst();
-        Assert.assertEquals("landscape", data.getString(data.getColumnIndex(ImageContract.CategoryEntry.NAME)));
+        testImageCategories(data, 1, 1, "landscape", 0.6f);
         data.moveToNext();
-        Assert.assertEquals("sky", data.getString(data.getColumnIndex(ImageContract.CategoryEntry.NAME)));
+        testImageCategories(data, 2, 1, "sky", 0.4f);
+    }
+
+    @Test
+    public void queryImageCategories_returnsCorrectColumnNames() {
+        getMockContentResolver().bulkInsert(ImageContract.CategoryEntry.CONTENT_URI, getValidCategories());
+        getMockContentResolver().bulkInsert(ImageContract.ImageEntry.CONTENT_URI, getValidImages());
+        getMockContentResolver().bulkInsert(ImageContract.ImageEntry.buildImageWithCategoriesUri(1),
+                getValidCategorizations(1));
+
+        getMockContentResolver().bulkInsert(ImageContract.ImageEntry.CONTENT_URI,
+                getValidImages());
+        getMockContentResolver().bulkInsert(ImageContract.CategoryEntry.CONTENT_URI,
+                getValidCategories());
+
+        Uri dataUri = ImageContract.ImageEntry.buildImageWithCategoriesUri(1);
+        Cursor data = getMockContentResolver().query(dataUri, null, null, null, null);
+        String[] expected = {
+                ImageContract.CategorizedImageEntry.IMAGE_ID,
+                ImageContract.CategoryEntry._ID,
+                ImageContract.CategoryEntry.NAME,
+                ImageContract.CategorizedImageEntry.CONFIDENCE };
+        String[] columns = data.getColumnNames();
+        Assert.assertArrayEquals(expected, columns);
     }
 
     private ContentValues getValidCategory() {
@@ -381,5 +397,12 @@ public class ImageProviderTest extends ProviderTestCase2<ImageProvider> {
         contentValues2.put(ImageContract.CategorizedImageEntry.CONFIDENCE, 0.4);
         values[1] = contentValues2;
         return values;
+    }
+
+    private void testImageCategories(Cursor data, int categoryId, int imageId, String categoryName, float confidence) {
+        Assert.assertEquals(categoryId, data.getInt(data.getColumnIndex(ImageContract.CategoryEntry._ID)));
+        Assert.assertEquals(imageId, data.getInt(data.getColumnIndex(ImageContract.CategorizedImageEntry.IMAGE_ID)));
+        Assert.assertEquals(categoryName, data.getString(data.getColumnIndex(ImageContract.CategoryEntry.NAME)));
+        Assert.assertEquals(confidence, data.getFloat(data.getColumnIndex(ImageContract.CategorizedImageEntry.CONFIDENCE)), 0.001);
     }
 }
