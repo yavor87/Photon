@@ -99,10 +99,7 @@ public class ImageProviderTest extends ProviderTestCase2<ImageProvider> {
         Assert.assertNotNull(data);
         Assert.assertEquals(1, data.getCount());
         data.moveToFirst();
-        Assert.assertEquals("file://local/img1.png",
-                data.getString(data.getColumnIndex(ImageContract.ImageEntry.IMAGE_URI)));
-        Assert.assertEquals(1,
-                data.getInt(data.getColumnIndex(ImageContract.ImageEntry._ID)));
+        testImage(data, 1, 123456, "file://local/img1.png");
     }
 
     @Test
@@ -201,16 +198,10 @@ public class ImageProviderTest extends ProviderTestCase2<ImageProvider> {
         Assert.assertNotNull(data);
         Assert.assertEquals(2, data.getCount());
         data.moveToFirst();
-        Assert.assertEquals("file://local/img1.png",
-                data.getString(data.getColumnIndex(ImageContract.ImageEntry.IMAGE_URI)));
-        Assert.assertEquals(1,
-                data.getInt(data.getColumnIndex(ImageContract.ImageEntry._ID)));
+        testImage(data, 1, 123456, "file://local/img1.png");
 
         data.moveToNext();
-        Assert.assertEquals("file://local/img2.png",
-                data.getString(data.getColumnIndex(ImageContract.ImageEntry.IMAGE_URI)));
-        Assert.assertEquals(2,
-                data.getInt(data.getColumnIndex(ImageContract.ImageEntry._ID)));
+        testImage(data, 2, 654321, "file://local/img2.png");
     }
 
     @Test
@@ -225,17 +216,11 @@ public class ImageProviderTest extends ProviderTestCase2<ImageProvider> {
         Assert.assertNotNull(data);
         Assert.assertEquals(2, data.getCount());
         data.moveToFirst();
-        Assert.assertEquals("file://local/img1.png",
-                data.getString(data.getColumnIndex(ImageContract.ImageEntry.IMAGE_URI)));
-        Assert.assertEquals(1,
-                data.getInt(data.getColumnIndex(ImageContract.ImageEntry._ID)));
+        testImage(data, 1, 123456, "file://local/img1.png");
 
         data.moveToNext();
-        Assert.assertEquals("file://local/img2.png",
-                data.getString(data.getColumnIndex(ImageContract.ImageEntry.IMAGE_URI)));
-        Assert.assertEquals(2,
-                data.getInt(data.getColumnIndex(ImageContract.ImageEntry._ID)));
-    }
+        testImage(data, 2, 654321, "file://local/img2.png");
+}
 
     @Test
     public void queryUncategorizedImages_afterCategorizing1Image_getsSingleImage() {
@@ -251,10 +236,7 @@ public class ImageProviderTest extends ProviderTestCase2<ImageProvider> {
         Assert.assertNotNull(data);
         Assert.assertEquals(1, data.getCount());
         data.moveToFirst();
-        Assert.assertEquals("file://local/img2.png",
-                data.getString(data.getColumnIndex(ImageContract.ImageEntry.IMAGE_URI)));
-        Assert.assertEquals(2,
-                data.getInt(data.getColumnIndex(ImageContract.ImageEntry._ID)));
+        testImage(data, 2, 654321, "file://local/img2.png");
     }
 
     @Test
@@ -284,10 +266,7 @@ public class ImageProviderTest extends ProviderTestCase2<ImageProvider> {
         Assert.assertNotNull(data);
         Assert.assertEquals(1, data.getCount());
         data.moveToFirst();
-        Assert.assertEquals("file://local/img2.png",
-                data.getString(data.getColumnIndex(ImageContract.ImageEntry.IMAGE_URI)));
-        Assert.assertEquals(2,
-                data.getInt(data.getColumnIndex(ImageContract.ImageEntry._ID)));
+        testImage(data, 2, 654321, "file://local/img2.png");
     }
 
     @Test
@@ -372,10 +351,12 @@ public class ImageProviderTest extends ProviderTestCase2<ImageProvider> {
         ContentValues[] values = new ContentValues[2];
         ContentValues contentValues1 = new ContentValues();
         contentValues1.put(ImageContract.ImageEntry._ID, 1);
+        contentValues1.put(ImageContract.ImageEntry.DATE_TAKEN, 123456);
         contentValues1.put(ImageContract.ImageEntry.IMAGE_URI, "file://local/img1.png");
         values[0] = contentValues1;
         ContentValues contentValues2 = new ContentValues();
         contentValues2.put(ImageContract.ImageEntry._ID, 2);
+        contentValues2.put(ImageContract.ImageEntry.DATE_TAKEN, 654321);
         contentValues2.put(ImageContract.ImageEntry.IMAGE_URI, "file://local/img2.png");
         values[1] = contentValues2;
         return values;
@@ -398,6 +379,17 @@ public class ImageProviderTest extends ProviderTestCase2<ImageProvider> {
         contentValues2.put(ImageContract.CategorizedImageEntry.CONFIDENCE, 0.4);
         values[1] = contentValues2;
         return values;
+    }
+
+    private void testImage(Cursor data, int imageId, int dateTaken, String imageUri) {
+        Assert.assertEquals(imageId, data.getInt(data.getColumnIndex(ImageContract.ImageEntry._ID)));
+        Assert.assertEquals(dateTaken, data.getInt(data.getColumnIndex(ImageContract.ImageEntry.DATE_TAKEN)));
+        Assert.assertEquals(imageUri, data.getString(data.getColumnIndex(ImageContract.ImageEntry.IMAGE_URI)));
+    }
+
+    private void testImage(Cursor data, int imageId, int dateTaken, String imageUri, String thumbUri) {
+        testImage(data, imageId, dateTaken, imageUri);
+        Assert.assertEquals(thumbUri, data.getString(data.getColumnIndex(ImageContract.ImageEntry.THUMBNAIL_URI)));
     }
 
     private void testImageCategories(Cursor data, int categoryId, int imageId, String categoryName, float confidence) {

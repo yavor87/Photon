@@ -71,10 +71,11 @@ public class CacheService extends IntentService {
     }
 
     private ContentValues[] getImages(Context context) {
-        final String[] projection = { MediaStore.Images.Media.DATA, MediaStore.Images.Media._ID, };
+        final String[] projection = { MediaStore.Images.Media.DATA, MediaStore.Images.Media._ID, MediaStore.Images.Media.DATE_TAKEN };
         final String[] thumb_projection = { MediaStore.Images.Thumbnails.DATA };
         final int COL_DATA = 0;
         final int COL_ID = 1;
+        final int COL_TAKEN = 2;
         final int COL_THUMB_DATA = 0;
 
         ContentResolver resolver = context.getContentResolver();
@@ -97,6 +98,7 @@ public class CacheService extends IntentService {
                 int imageId = imageCursor.getInt(COL_ID);
                 ContentValues values = new ContentValues();
                 values.put(ImageContract.ImageEntry._ID, imageId);
+                values.put(ImageContract.ImageEntry.DATE_TAKEN, imageCursor.getInt(COL_DATA));
                 values.put(ImageContract.ImageEntry.IMAGE_URI, "file:" + imageCursor.getString(COL_DATA));
 
                 // Obtain thumbnail

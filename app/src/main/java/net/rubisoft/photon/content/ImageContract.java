@@ -41,6 +41,13 @@ public class ImageContract {
         public static String IMAGE_URI = "uri";
         public static String THUMBNAIL_URI = "thumb_uri";
 
+        /**
+         * The date & time that the image was taken in units
+         * of milliseconds since jan 1, 1970.
+         * <P>Type: INTEGER</P>
+         */
+        public static final String DATE_TAKEN = "datetaken";
+
         public static final Uri CONTENT_URI =
                 BASE_CONTENT_URI.buildUpon().appendPath(PATH_IMAGE).build();
 
