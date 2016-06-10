@@ -57,22 +57,23 @@ public class CategorizationService extends IntentService {
             return;
         }
 
-        int uncategorizedImages = cursor.getCount();
-        if (uncategorizedImages == 0) {
-            Log.v(LOG_TAG, "Nothing to categorize");
-            return;
-        }
-
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
-                .setSmallIcon(R.drawable.camera)
-                .setContentTitle(getString(R.string.categorization_notification_title));
-
+        NotificationCompat.Builder builder;
         int categorizedCount = 0;
         try {
+            int uncategorizedImages = cursor.getCount();
+            if (uncategorizedImages == 0) {
+                Log.v(LOG_TAG, "Nothing to categorize");
+                return;
+            }
+
+            builder = new NotificationCompat.Builder(this)
+                    .setSmallIcon(R.drawable.camera)
+                    .setContentTitle(getString(R.string.categorization_notification_title));
+
             while (cursor.moveToNext()) {
                 // Display notification
                 builder.setContentText(getString(R.string.categorization_notification_text,
-                                categorizedCount + 1, uncategorizedImages));
+                        categorizedCount + 1, uncategorizedImages));
                 mNotificationManager.notify(CATEGORIZATION_NOTIFICATION, builder.build());
 
                 int imageId = cursor.getInt(COL_ID);
