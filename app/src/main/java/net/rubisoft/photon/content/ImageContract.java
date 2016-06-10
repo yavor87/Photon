@@ -36,7 +36,6 @@ public class ImageContract {
 
     public static class ImageEntry implements BaseColumns {
         public static String TABLE_NAME = "images";
-        public static String CATEGORIES_VIEW_NAME = "image_categories";
 
         public static String IMAGE_URI = "uri";
         public static String THUMBNAIL_URI = "thumb_uri";
@@ -68,6 +67,15 @@ public class ImageContract {
             return ContentUris.withAppendedId(CONTENT_URI, id).buildUpon()
                     .appendPath("categories").build();
         }
+    }
+
+    public static class ImageCategoriesView {
+        public static String VIEW_NAME = "image_categories";
+
+        public static final String _ID = CategoryEntry._ID;
+        public static String IMAGE_ID = CategorizedImageEntry.IMAGE_ID;
+        public static String NAME = CategoryEntry.NAME;
+        public static String CONFIDENCE = CategorizedImageEntry.CONFIDENCE;
     }
 
     public static class CategorizedImageEntry implements BaseColumns {

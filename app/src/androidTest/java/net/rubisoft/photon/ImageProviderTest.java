@@ -393,9 +393,9 @@ public class ImageProviderTest extends ProviderTestCase2<ImageProvider> {
     }
 
     private void testImageCategories(Cursor data, int categoryId, int imageId, String categoryName, float confidence) {
-        Assert.assertEquals(categoryId, data.getInt(data.getColumnIndex(ImageContract.CategoryEntry._ID)));
-        Assert.assertEquals(imageId, data.getInt(data.getColumnIndex(ImageContract.CategorizedImageEntry.IMAGE_ID)));
-        Assert.assertEquals(categoryName, data.getString(data.getColumnIndex(ImageContract.CategoryEntry.NAME)));
-        Assert.assertEquals(confidence, data.getFloat(data.getColumnIndex(ImageContract.CategorizedImageEntry.CONFIDENCE)), 0.001);
+        Assert.assertEquals(categoryId, data.getInt(data.getColumnIndex(ImageContract.ImageCategoriesView._ID)));
+        Assert.assertEquals(imageId, data.getInt(data.getColumnIndex(ImageContract.ImageCategoriesView.IMAGE_ID)));
+        Assert.assertEquals(categoryName, data.getString(data.getColumnIndex(ImageContract.ImageCategoriesView.NAME)));
+        Assert.assertEquals(confidence, data.getFloat(data.getColumnIndex(ImageContract.ImageCategoriesView.CONFIDENCE)), 0.001);
     }
 }

@@ -115,7 +115,7 @@ public class ImageProvider extends ContentProvider {
                 selection = ImageContract.CategorizedImageEntry.IMAGE_ID + "=?";
                 selectionArgs = new String[] { uri.getPathSegments().get(1) };
                 retCursor = mOpenHelper.getReadableDatabase().query(
-                        ImageContract.ImageEntry.CATEGORIES_VIEW_NAME,
+                        ImageContract.ImageCategoriesView.VIEW_NAME,
                         projection,
                         selection,
                         selectionArgs,

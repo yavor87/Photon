@@ -44,12 +44,12 @@ public class ImagesCacheDBHelper extends SQLiteOpenHelper {
                 ImageContract.CategoryEntry._ID + "));";
 
         final String SQL_CREATE_IMAGE_CATEGORIES_VIEW = "CREATE VIEW " +
-                ImageContract.ImageEntry.CATEGORIES_VIEW_NAME + " AS SELECT " +
-                ImageContract.CategorizedImageEntry.IMAGE_ID + ", " +
+                ImageContract.ImageCategoriesView.VIEW_NAME + " AS SELECT " +
+                ImageContract.ImageCategoriesView.IMAGE_ID + ", " +
                 ImageContract.CategorizedImageEntry.CATEGORY_ID + " AS " +
-                ImageContract.CategoryEntry._ID + ", " +
-                ImageContract.CategoryEntry.NAME + ", " +
-                ImageContract.CategorizedImageEntry.CONFIDENCE + " FROM " +
+                ImageContract.ImageCategoriesView._ID + ", " +
+                ImageContract.ImageCategoriesView.NAME + ", " +
+                ImageContract.ImageCategoriesView.CONFIDENCE + " FROM " +
                 ImageContract.CategorizedImageEntry.TABLE_NAME + " JOIN " +
                 ImageContract.CategoryEntry.TABLE_NAME + " ON " +
                 ImageContract.CategorizedImageEntry.TABLE_NAME + "." +
@@ -67,7 +67,7 @@ public class ImagesCacheDBHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + ImageContract.CategoryEntry.TABLE_NAME);
         db.execSQL("DROP TABLE IF EXISTS " + ImageContract.ImageEntry.TABLE_NAME);
         db.execSQL("DROP TABLE IF EXISTS " + ImageContract.CategorizedImageEntry.TABLE_NAME);
-        db.execSQL("DROP VIEW IF EXISTS " + ImageContract.ImageEntry.CATEGORIES_VIEW_NAME);
+        db.execSQL("DROP VIEW IF EXISTS " + ImageContract.ImageCategoriesView.VIEW_NAME);
         onCreate(db);
     }
 }
