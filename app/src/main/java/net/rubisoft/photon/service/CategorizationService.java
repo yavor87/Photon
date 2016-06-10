@@ -94,7 +94,10 @@ public class CategorizationService extends IntentService {
                     }
 
                     Uri insertUri = ImageContract.ImageEntry.buildImageWithCategoriesUri(imageId);
-                    getContentResolver().bulkInsert(insertUri, contentValues);
+                    int insertCount = getContentResolver().bulkInsert(insertUri, contentValues);
+                    if (insertCount != contentValues.length) {
+                        Log.v(LOG_TAG, "Something went wrong when inserting categorizations");
+                    }
                     categorizedCount++;
                 }
             }
