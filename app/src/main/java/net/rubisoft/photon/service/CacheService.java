@@ -8,7 +8,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.v4.content.ContextCompat;
@@ -17,7 +16,6 @@ import android.util.Log;
 import net.rubisoft.photon.categorization.Categorizer;
 import net.rubisoft.photon.categorization.ImaggaCategorizer;
 import net.rubisoft.photon.content.ImageContract;
-import net.rubisoft.photon.content.ImagesCacheDBHelper;
 
 import java.util.Iterator;
 
@@ -53,7 +51,6 @@ public class CacheService extends IntentService {
             return;
 
         ImageIterator imageIterator = new ImageIterator(this);
-        SQLiteDatabase db = new ImagesCacheDBHelper(this).getWritableDatabase();
         try {
             ContentResolver resolver = getContentResolver();
             int stored = 0;
@@ -68,7 +65,6 @@ public class CacheService extends IntentService {
             }
             Log.v(LOG_TAG, "Stored " + stored + " images in db");
         } finally {
-            db.close();
             imageIterator.close();
         }
     }
@@ -79,19 +75,14 @@ public class CacheService extends IntentService {
         if (categories == null)
             return;
 
-        SQLiteDatabase db = new ImagesCacheDBHelper(this).getWritableDatabase();
-        try {
-            ContentValues[] values = new ContentValues[categories.length];
-            for (int i = 0; i < categories.length; i++) {
-                ContentValues value = new ContentValues();
-                value.put(ImageContract.CategoryEntry.NAME, categories[i]);
-                values[i] = value;
-            }
-            int stored = getContentResolver().bulkInsert(ImageContract.CategoryEntry.CONTENT_URI, values);
-            Log.v(LOG_TAG, "Stored " + stored + " categories in db");
-        } finally {
-            db.close();
+        ContentValues[] values = new ContentValues[categories.length];
+        for (int i = 0; i < categories.length; i++) {
+            ContentValues value = new ContentValues();
+            value.put(ImageContract.CategoryEntry.NAME, categories[i]);
+            values[i] = value;
         }
+        int stored = getContentResolver().bulkInsert(ImageContract.CategoryEntry.CONTENT_URI, values);
+        Log.v(LOG_TAG, "Stored " + stored + " categories in db");
     }
 
     private class ImageIterator implements Iterator<ContentValues> {
