@@ -11,7 +11,7 @@
             android:scaleType="fitCenter"
             android:adjustViewBounds="true"
             android:id="@+id/detail_image"
-            android:src="@drawable/placeholder" />
+            android:src="#ff0000" />
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

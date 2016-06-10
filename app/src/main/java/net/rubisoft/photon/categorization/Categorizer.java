@@ -8,7 +8,7 @@ public interface Categorizer {
     String[] getCategories();
     List<Categorization> categorizeImage(Uri image);
 
-    public class Categorization {
+    class Categorization {
         public Categorization(String category, float confidence) {
             this.mCategory = category;
             this.mConfidence = confidence;

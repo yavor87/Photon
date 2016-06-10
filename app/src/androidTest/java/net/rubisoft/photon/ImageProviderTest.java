@@ -345,6 +345,7 @@ public class ImageProviderTest extends ProviderTestCase2<ImageProvider> {
                 ImageContract.CategoryEntry.NAME,
                 ImageContract.CategorizedImageEntry.CONFIDENCE };
         String[] columns = data.getColumnNames();
+        data.close();
         Assert.assertArrayEquals(expected, columns);
     }
 

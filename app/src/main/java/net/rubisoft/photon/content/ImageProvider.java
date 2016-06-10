@@ -5,7 +5,6 @@ import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -213,7 +212,7 @@ public class ImageProvider extends ContentProvider {
         final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
 
         final int match = sUriMatcher.match(uri);
-        int rowsDeleted = -1;
+        int rowsDeleted;
 
         if (selection == null)
             selection = "1";
@@ -245,7 +244,7 @@ public class ImageProvider extends ContentProvider {
         final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
 
         final int match = sUriMatcher.match(uri);
-        int rowsUpdated = -1;
+        int rowsUpdated;
         switch (match) {
             case Image : {
                 rowsUpdated = db.update(ImageContract.ImageEntry.TABLE_NAME, values, selection, selectionArgs);

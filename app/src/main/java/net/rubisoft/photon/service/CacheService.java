@@ -112,7 +112,8 @@ public class CacheService extends IntentService {
                 } catch (Exception e) {
                     e.printStackTrace();
                 } finally {
-                    thumbnail.close();
+                    if (thumbnail != null)
+                        thumbnail.close();
                 }
 
                 valuesArr[i++] = values;
