@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 
 import net.rubisoft.photon.service.CacheService;
-import net.rubisoft.photon.service.CategorizationService;
 
 public class PhotonApp extends Application {
     public static final String INITIALIZED_KEY = "initialized";
