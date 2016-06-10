@@ -98,7 +98,7 @@ public class PhotoListFragment extends Fragment implements LoaderManager.LoaderC
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         Context context = getContext();
-        return new CursorLoader(context, ImageContract.ImageEntry.CONTENT_URI, IMAGE_COLUMNS, null, null, null);
+        return new CursorLoader(context, ImageContract.ImageEntry.CONTENT_URI, IMAGE_COLUMNS, null, null, ImageContract.ImageEntry.DATE_TAKEN + " DESC");
     }
 
     @Override
