@@ -50,6 +50,13 @@ public class ImageProviderTest extends ProviderTestCase2<ImageProvider> {
     }
 
     @Test
+    public void getType_forImagesInCategories_returnsCorrectContentType() {
+        Uri uri = ImageContract.CategoryEntry.buildImagesForCategoryUri(1);
+        String type = getMockContentResolver().getType(uri);
+        Assert.assertEquals(ImageContract.ImageEntry.CONTENT_TYPE, type);
+    }
+
+    @Test
     public void getType_forImage_returnsCorrectContentType() {
         Uri uri = ImageContract.ImageEntry.buildImageUri(1);
         String type = getMockContentResolver().getType(uri);
@@ -220,7 +227,7 @@ public class ImageProviderTest extends ProviderTestCase2<ImageProvider> {
 
         data.moveToNext();
         testImage(data, 2, 654321, "file://local/img2.png");
-}
+    }
 
     @Test
     public void queryUncategorizedImages_afterCategorizing1Image_getsSingleImage() {
@@ -326,6 +333,48 @@ public class ImageProviderTest extends ProviderTestCase2<ImageProvider> {
         String[] columns = data.getColumnNames();
         data.close();
         Assert.assertArrayEquals(expected, columns);
+    }
+
+    @Test
+    public void queryImagesForCategory_beforeCategorizingImage_getsNoImages() {
+        getMockContentResolver().bulkInsert(ImageContract.CategoryEntry.CONTENT_URI, getValidCategories());
+        getMockContentResolver().bulkInsert(ImageContract.ImageEntry.CONTENT_URI, getValidImages());
+
+        Uri dataUri = ImageContract.CategoryEntry.buildImagesForCategoryUri(1);
+        Cursor data = getMockContentResolver().query(dataUri, null, null, null, null);
+        Assert.assertEquals(0, data.getCount());
+        data.close();
+    }
+
+    @Test
+    public void queryImagesForCategory_afterCategorizingImage_getsValidImage() {
+        getMockContentResolver().bulkInsert(ImageContract.CategoryEntry.CONTENT_URI, getValidCategories());
+        getMockContentResolver().bulkInsert(ImageContract.ImageEntry.CONTENT_URI, getValidImages());
+
+        ContentValues validCategorization = getValidCategorization(1);
+        getMockContentResolver().insert(ImageContract.ImageEntry.buildImageWithCategoriesUri(1),
+                validCategorization);
+
+        Uri dataUri = ImageContract.CategoryEntry.buildImagesForCategoryUri(1);
+        Cursor data = getMockContentResolver().query(dataUri, null, null, null, null);
+        Assert.assertEquals(1, data.getCount());
+        data.moveToFirst();
+        testImage(data, 1, 123456, "file://local/img1.png");
+        data.close();
+    }
+
+    @Test
+    public void queryImagesForCategory_afterCategorizingImage_getsNoImageForOtherCategories() {
+        getMockContentResolver().bulkInsert(ImageContract.CategoryEntry.CONTENT_URI, getValidCategories());
+        getMockContentResolver().bulkInsert(ImageContract.ImageEntry.CONTENT_URI, getValidImages());
+
+        getMockContentResolver().insert(ImageContract.ImageEntry.buildImageWithCategoriesUri(1),
+                getValidCategorization(1));
+
+        Uri dataUri = ImageContract.CategoryEntry.buildImagesForCategoryUri(2);
+        Cursor data = getMockContentResolver().query(dataUri, null, null, null, null);
+        Assert.assertEquals(0, data.getCount());
+        data.close();
     }
 
     private ContentValues getValidCategory() {

@@ -14,17 +14,23 @@ public class ImageProvider extends ContentProvider {
     private static final String LOG_TAG = ImageProvider.class.getSimpleName();
     private static final int Images = 100;
     private static final int Image = 101;
+    private static final int CategoriesForImage = 102;
     private static final int UncategorizedImages = 111;
     private static final int Categories = 200;
     private static final int Category = 201;
-    private static final int CategoriesForImage = 300;
+    private static final int ImagesForCategory = 202;
 
-    private static final String UNCATEGORIZED_FILTER = "NOT EXISTS (SELECT " +
-            ImageContract.CategorizedImageEntry.IMAGE_ID + " FROM " +
+    private static final String UNCATEGORIZED_FILTER = "NOT EXISTS (SELECT 1 FROM " +
             ImageContract.CategorizedImageEntry.TABLE_NAME + " WHERE " +
             ImageContract.CategorizedImageEntry.TABLE_NAME + "." +
             ImageContract.CategorizedImageEntry.IMAGE_ID + " = " +
             ImageContract.ImageEntry.TABLE_NAME + "." + ImageContract.ImageEntry._ID + ")";
+
+    private static final String CATEGORIZED_IMAGES_FILTER = ImageContract.ImageEntry._ID +
+            " IN (SELECT " + ImageContract.CategorizedImageEntry.IMAGE_ID + " FROM " +
+            ImageContract.CategorizedImageEntry.TABLE_NAME + " WHERE " +
+            ImageContract.CategorizedImageEntry.CATEGORY_ID + " =?)";
+
 
     private static final UriMatcher sUriMatcher = buildUriMatcher();
     private ImagesCacheDBHelper mOpenHelper;
@@ -44,6 +50,7 @@ public class ImageProvider extends ContentProvider {
 
         switch (match) {
             case Images:
+            case ImagesForCategory:
             case UncategorizedImages:
                 return ImageContract.ImageEntry.CONTENT_TYPE;
             case Image:
@@ -69,28 +76,26 @@ public class ImageProvider extends ContentProvider {
             case Image: {
                 selection = ImageContract.ImageEntry._ID + "=?";
                 selectionArgs = new String[] { uri.getLastPathSegment() };
+                retCursor = queryImages(projection, selection, selectionArgs, sortOrder);
+                break;
+            }
+            // "category/#/images"
+            case ImagesForCategory: {
+                selection = CATEGORIZED_IMAGES_FILTER;
+                selectionArgs = new String[] { uri.getPathSegments().get(1) };
+                retCursor = queryImages(projection, selection, selectionArgs, sortOrder);
+                break;
             }
             // "image"
             case Images: {
-                retCursor = mOpenHelper.getReadableDatabase().query(
-                        ImageContract.ImageEntry.TABLE_NAME,
-                        projection,
-                        selection,
-                        selectionArgs,
-                        null,
-                        null,
-                        sortOrder);
+                retCursor = queryImages(projection, selection, selectionArgs, sortOrder);
                 break;
             }
             // "uncategorized"
             case UncategorizedImages: {
-                retCursor =  mOpenHelper.getReadableDatabase().query(ImageContract.ImageEntry.TABLE_NAME,
-                        projection,
-                        UNCATEGORIZED_FILTER,
-                        null,
-                        null,
-                        null,
-                        sortOrder);
+                selection = UNCATEGORIZED_FILTER;
+                selectionArgs = null;
+                retCursor = queryImages(projection, selection, selectionArgs, sortOrder);
                 break;
             }
             // "category/#"
@@ -265,6 +270,17 @@ public class ImageProvider extends ContentProvider {
         return rowsUpdated;
     }
 
+    private Cursor queryImages(String[] projection, String selection, String[] selectionArgs, String sortOrder) {
+        return mOpenHelper.getReadableDatabase().query(
+                ImageContract.ImageEntry.TABLE_NAME,
+                projection,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                sortOrder);
+    }
+
     static UriMatcher buildUriMatcher() {
         UriMatcher matcher = new UriMatcher(UriMatcher.NO_MATCH);
         matcher.addURI(ImageContract.CONTENT_AUTHORITY, ImageContract.PATH_IMAGE, Images);
@@ -272,6 +288,7 @@ public class ImageProvider extends ContentProvider {
         matcher.addURI(ImageContract.CONTENT_AUTHORITY, ImageContract.PATH_IMAGE + "/#/categories", CategoriesForImage);
         matcher.addURI(ImageContract.CONTENT_AUTHORITY, ImageContract.PATH_CATEGORY, Categories);
         matcher.addURI(ImageContract.CONTENT_AUTHORITY, ImageContract.PATH_CATEGORY + "/#", Category);
+        matcher.addURI(ImageContract.CONTENT_AUTHORITY, ImageContract.PATH_CATEGORY + "/#/images", ImagesForCategory);
         matcher.addURI(ImageContract.CONTENT_AUTHORITY, ImageContract.PATH_UNCATEGORIZED_IMAGES, UncategorizedImages);
         return matcher;
     }

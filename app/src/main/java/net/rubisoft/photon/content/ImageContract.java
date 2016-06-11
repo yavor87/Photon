@@ -32,6 +32,11 @@ public class ImageContract {
         public static Uri buildCategoryUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
+
+        public static Uri buildImagesForCategoryUri(long id) {
+            return ContentUris.withAppendedId(CONTENT_URI, id).buildUpon()
+                    .appendPath("images").build();
+        }
     }
 
     public static class ImageEntry implements BaseColumns {
