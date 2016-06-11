@@ -12,6 +12,7 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,6 +33,7 @@ public class PhotoListFragment extends Fragment implements LoaderManager.LoaderC
     public PhotoListFragment() {
     }
 
+    private static final String LOG_TAG = PhotoListFragment.class.getSimpleName();
     private static final int LOADER_ID = 0;
 
     private static final String[] IMAGE_COLUMNS = {
@@ -88,8 +90,11 @@ public class PhotoListFragment extends Fragment implements LoaderManager.LoaderC
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Cursor cursor = (Cursor) parent.getItemAtPosition(position);
-                if (mListener != null)
-                    mListener.onItemSelected(cursor.getInt(COL_IMAGE_ID));
+                if (mListener != null) {
+                    int imageId = cursor.getInt(COL_IMAGE_ID);
+                    Log.v(LOG_TAG, "Clicked image " + Integer.toString(imageId));
+                    mListener.onItemSelected(imageId);
+                }
             }
         });
         return view;
@@ -109,6 +114,10 @@ public class PhotoListFragment extends Fragment implements LoaderManager.LoaderC
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
         mImageAdapter.swapCursor(null);
+    }
+
+    public void DisplayCategory(int categoryId) {
+        Log.v(LOG_TAG, "DisplayCategory " + Integer.toString(categoryId));
     }
 
     public interface OnImageSelectedListener {
