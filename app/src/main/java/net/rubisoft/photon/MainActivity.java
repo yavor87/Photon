@@ -2,6 +2,8 @@ package net.rubisoft.photon;
 
 import android.content.Intent;
 import android.database.Cursor;
+import android.database.MatrixCursor;
+import android.database.MergeCursor;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
@@ -18,7 +20,10 @@ import net.rubisoft.photon.content.ImageContract;
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>,
         PhotoListFragment.OnImageSelectedListener{
 
-    public static final String PHOTO_LIST = "photo_list";
+    private static final String PHOTO_LIST = "photo_list";
+    private static final String[] PROJECTION = { ImageContract.CategoryEntry._ID,
+            ImageContract.CategoryEntry.NAME };
+
     private SimpleCursorAdapter mCategoriesAdapter;
 
     @Override
@@ -49,24 +54,33 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     @Override
-    public void onItemSelected(int imageId) {
+    public void onItemSelected(int imageId, int categoryId) {
         Intent intent = new Intent(this, DetailActivity.class);
         intent.putExtra(DetailActivity.IMAGE_ID_EXTRA, imageId);
+        if (categoryId != PhotoListFragment.ALL_CATEGORIES) {
+            intent.putExtra(DetailActivity.CATEGORY_ID_EXTRA, categoryId);
+        }
         startActivity(intent);
     }
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        return new CursorLoader(this, ImageContract.CategoryEntry.CONTENT_URI, null, null, null, null);
+        return new CursorLoader(this, ImageContract.CategoryEntry.CONTENT_URI, PROJECTION, null, null, null);
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        mCategoriesAdapter.swapCursor(data);
+        mCategoriesAdapter.swapCursor(addAllCategoriesOption(data));
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
         mCategoriesAdapter.swapCursor(null);
+    }
+
+    private Cursor addAllCategoriesOption(Cursor categoriesCursor) {
+        MatrixCursor allOption = new MatrixCursor(categoriesCursor.getColumnNames());
+        allOption.addRow(new Object[]{ PhotoListFragment.ALL_CATEGORIES, "all"});
+        return new MergeCursor(new Cursor[]{ allOption, categoriesCursor} );
     }
 }

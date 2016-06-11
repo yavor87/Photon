@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -33,9 +34,13 @@ public class PhotoListFragment extends Fragment implements LoaderManager.LoaderC
     public PhotoListFragment() {
     }
 
-    private static final String LOG_TAG = PhotoListFragment.class.getSimpleName();
-    private static final int LOADER_ID = 0;
+    public static final int ALL_CATEGORIES = -1;
 
+    private static final String LOG_TAG = PhotoListFragment.class.getSimpleName();
+
+    private static final int READ_EXTERNAL_STORAGE_PERMISSION_REQUEST = 101;
+    private static final int LOADER_ID = 0;
+    private static final String ARG_CATEGORY_ID = "category_id";
     private static final String[] IMAGE_COLUMNS = {
             ImageContract.ImageEntry._ID,
             ImageContract.ImageEntry.THUMBNAIL_URI,
@@ -43,15 +48,20 @@ public class PhotoListFragment extends Fragment implements LoaderManager.LoaderC
     };
     static final int COL_IMAGE_ID = 0;
     static final int COL_THUMB_URI = 1;
+
     static final int COL_IMAGE_URI = 2;
 
     private OnImageSelectedListener mListener;
     private ImageGridViewAdapter mImageAdapter;
-    private static final int READ_EXTERNAL_STORAGE_PERMISSION_REQUEST = 101;
+    private int mCategoryId = ALL_CATEGORIES;
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+
+        if (savedInstanceState != null) {
+            mCategoryId = savedInstanceState.getInt(DetailActivity.CATEGORY_ID_EXTRA);
+        }
 
         if (ContextCompat.checkSelfPermission(getContext(),
                 Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
@@ -93,7 +103,7 @@ public class PhotoListFragment extends Fragment implements LoaderManager.LoaderC
                 if (mListener != null) {
                     int imageId = cursor.getInt(COL_IMAGE_ID);
                     Log.v(LOG_TAG, "Clicked image " + Integer.toString(imageId));
-                    mListener.onItemSelected(imageId);
+                    mListener.onItemSelected(imageId, mCategoryId);
                 }
             }
         });
@@ -103,7 +113,14 @@ public class PhotoListFragment extends Fragment implements LoaderManager.LoaderC
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         Context context = getContext();
-        return new CursorLoader(context, ImageContract.ImageEntry.CONTENT_URI, IMAGE_COLUMNS, null, null, ImageContract.ImageEntry.DEFAULT_SORT_ORDER);
+        Uri dataUri;
+        if (args != null && args.containsKey(ARG_CATEGORY_ID)) {
+            // get images from this category
+            dataUri = ImageContract.CategoryEntry.buildImagesForCategoryUri(args.getInt(ARG_CATEGORY_ID));
+        } else {
+            dataUri = ImageContract.ImageEntry.CONTENT_URI;
+        }
+        return new CursorLoader(context, dataUri, IMAGE_COLUMNS, null, null, ImageContract.ImageEntry.DEFAULT_SORT_ORDER);
     }
 
     @Override
@@ -116,11 +133,25 @@ public class PhotoListFragment extends Fragment implements LoaderManager.LoaderC
         mImageAdapter.swapCursor(null);
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        outState.putInt(DetailActivity.CATEGORY_ID_EXTRA, mCategoryId);
+    }
+
     public void DisplayCategory(int categoryId) {
+        mCategoryId = categoryId;
         Log.v(LOG_TAG, "DisplayCategory " + Integer.toString(categoryId));
+        Bundle args = null;
+        if (categoryId != ALL_CATEGORIES) {
+            args = new Bundle();
+            args.putInt(ARG_CATEGORY_ID, categoryId);
+        }
+        getLoaderManager().restartLoader(LOADER_ID, args, this);
     }
 
     public interface OnImageSelectedListener {
-        void onItemSelected(int imageId);
+        void onItemSelected(int imageId, int categoryId);
     }
 }
