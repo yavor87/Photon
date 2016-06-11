@@ -2,6 +2,7 @@ package net.rubisoft.photon;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
@@ -21,6 +22,7 @@ import android.widget.AdapterView;
 import android.widget.GridView;
 
 import net.rubisoft.photon.content.ImageContract;
+import net.rubisoft.photon.service.CacheService;
 
 /**
  * A fragment representing a list of Photos.
@@ -85,6 +87,10 @@ public class PhotoListFragment extends Fragment implements LoaderManager.LoaderC
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == READ_EXTERNAL_STORAGE_PERMISSION_REQUEST && grantResults.length == 1 &&
                 grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            Intent cacheServiceIntent = new Intent(getContext(), CacheService.class);
+            cacheServiceIntent.putExtra(CacheService.MODE_KEY, CacheService.MODE_IMAGES);
+            getActivity().startService(cacheServiceIntent);
+
             getLoaderManager().initLoader(LOADER_ID, null, this);
         }
     }
