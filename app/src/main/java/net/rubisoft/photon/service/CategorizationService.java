@@ -14,6 +14,7 @@ import net.rubisoft.photon.categorization.Categorizer;
 import net.rubisoft.photon.categorization.ImaggaCategorizer;
 import net.rubisoft.photon.content.ImageContract;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -82,22 +83,31 @@ public class CategorizationService extends IntentService {
                         Uri.parse(imageUri));
 
                 if (categories != null) {
-                    ContentValues[] contentValues = new ContentValues[categories.size()];
-                    int i = 0;
+                    List<ContentValues> contentValues = new ArrayList<>(categories.size());
                     for (Categorizer.Categorization categorization : categories) {
                         ContentValues values = new ContentValues();
                         values.put(ImageContract.CategorizedImageEntry.IMAGE_ID, imageId);
-                        values.put(ImageContract.CategorizedImageEntry.CATEGORY_ID,
-                                mCategoryMap.get(categorization.getCategory()));
+                        String category = categorization.getCategory();
+                        Integer categoryId = mCategoryMap.get(category);
+                        if (categoryId == null) {
+                            Log.d(LOG_TAG, "Unrecognized category " + category);
+                            continue;
+                        }
+                        values.put(ImageContract.CategorizedImageEntry.CATEGORY_ID, categoryId);
                         values.put(ImageContract.CategorizedImageEntry.CONFIDENCE,
                                 categorization.getConfidence());
-                        contentValues[i++] = values;
+                        contentValues.add(values);
                     }
 
                     Uri insertUri = ImageContract.ImageEntry.buildImageWithCategoriesUri(imageId);
-                    int insertCount = getContentResolver().bulkInsert(insertUri, contentValues);
-                    if (insertCount != contentValues.length) {
-                        Log.v(LOG_TAG, "Something went wrong when inserting categorizations");
+                    if (contentValues.size() > 0) {
+                        int insertCount = getContentResolver().bulkInsert(insertUri,
+                                contentValues.toArray(new ContentValues[contentValues.size()]));
+                        if (insertCount != contentValues.size()) {
+                            Log.d(LOG_TAG, "Something went wrong when inserting categorizations");
+                        }
+                    } else {
+                        Log.d(LOG_TAG, "No categories found for this image");
                     }
                     categorizedCount++;
                 }

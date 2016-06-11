@@ -165,7 +165,7 @@ public class ImaggaCategorizer implements Categorizer {
             categorizations = new ArrayList<>();
             for (int i = 0; i < categories.length(); i++) {
                 JSONObject catObj = (JSONObject) categories.get(i);
-                categorizations.add(new Categorization(catObj.getString("name").replace(' ', '_'),
+                categorizations.add(new Categorization(catObj.getString("name"),
                         (float) (catObj.getDouble("confidence") / 100d)));
             }
         } catch (JSONException e) {
