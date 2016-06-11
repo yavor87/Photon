@@ -31,7 +31,7 @@ public class CategorizationService extends IntentService {
     private static final int COL_ID = 0;
     private static final int COL_URI = 1;
     private static Map<String, Integer> mCategoryMap;
-    private static int CATEGORIZATION_NOTIFICATION = 1;
+    private static final int CATEGORIZATION_NOTIFICATION = 1;
 
     private Categorizer mCategorizer;
     NotificationManager mNotificationManager;
@@ -39,6 +39,11 @@ public class CategorizationService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         Log.v(LOG_TAG, "Started");
+        categorizeImages();
+        Log.v(LOG_TAG, "Finished");
+    }
+
+    private void categorizeImages() {
         mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
         // get image File from intent
