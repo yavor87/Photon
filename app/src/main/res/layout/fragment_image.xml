@@ -10,8 +10,7 @@
             android:layout_height="wrap_content"
             android:scaleType="fitCenter"
             android:adjustViewBounds="true"
-            android:id="@+id/detail_image"
-            android:src="#ff0000" />
+            android:id="@+id/detail_image"  />
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
