@@ -21,12 +21,12 @@ public class CacheService extends IntentService {
         super("CacheService");
     }
 
-    public static String BROADCAST_ACTION = "net.rubisoft.photon.service.CACHING_COMPLETE";
-    public static String MODE_KEY = "mode";
-    public static int MODE_IMAGES = 1;
-    public static int MODE_CATEGORIES = 2;
-    public static int MODE_ALL = 3;
-    private static String LOG_TAG = CacheService.class.getSimpleName();
+    public static final String BROADCAST_ACTION = "net.rubisoft.photon.service.CACHING_COMPLETE";
+    public static final String MODE_KEY = "mode";
+    public static final int MODE_IMAGES = 1;
+    public static final int MODE_CATEGORIES = 2;
+    public static final int MODE_ALL = 3;
+    private static final String LOG_TAG = CacheService.class.getSimpleName();
 
     @Override
     protected void onHandleIntent(Intent intent) {

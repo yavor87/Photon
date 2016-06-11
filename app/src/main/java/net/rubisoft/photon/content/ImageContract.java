@@ -17,9 +17,9 @@ public class ImageContract {
     public static final String PATH_CATEGORY = "category";
 
     public static class CategoryEntry implements BaseColumns {
-        public static String TABLE_NAME = "categories";
+        public static final String TABLE_NAME = "categories";
 
-        public static String NAME = "name";
+        public static final String NAME = "name";
 
         public static final Uri CONTENT_URI =
                 BASE_CONTENT_URI.buildUpon().appendPath(PATH_CATEGORY).build();
@@ -35,10 +35,10 @@ public class ImageContract {
     }
 
     public static class ImageEntry implements BaseColumns {
-        public static String TABLE_NAME = "images";
+        public static final String TABLE_NAME = "images";
 
-        public static String IMAGE_URI = "uri";
-        public static String THUMBNAIL_URI = "thumb_uri";
+        public static final String IMAGE_URI = "uri";
+        public static final String THUMBNAIL_URI = "thumb_uri";
 
         /**
          * The date & time that the image was taken in units
@@ -70,19 +70,19 @@ public class ImageContract {
     }
 
     public static class ImageCategoriesView {
-        public static String VIEW_NAME = "image_categories";
+        public static final String VIEW_NAME = "image_categories";
 
         public static final String _ID = CategoryEntry._ID;
-        public static String IMAGE_ID = CategorizedImageEntry.IMAGE_ID;
-        public static String NAME = CategoryEntry.NAME;
-        public static String CONFIDENCE = CategorizedImageEntry.CONFIDENCE;
+        public static final String IMAGE_ID = CategorizedImageEntry.IMAGE_ID;
+        public static final String NAME = CategoryEntry.NAME;
+        public static final String CONFIDENCE = CategorizedImageEntry.CONFIDENCE;
     }
 
     public static class CategorizedImageEntry implements BaseColumns {
-        public static String TABLE_NAME = "categorizedImages";
+        public static final String TABLE_NAME = "categorizedImages";
 
-        public static String IMAGE_ID = "image_id";
-        public static String CATEGORY_ID = "category_id";
-        public static String CONFIDENCE = "confidence";
+        public static final String IMAGE_ID = "image_id";
+        public static final String CATEGORY_ID = "category_id";
+        public static final String CONFIDENCE = "confidence";
     }
 }
