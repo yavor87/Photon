@@ -40,6 +40,8 @@ public class ImageContract {
         public static final String IMAGE_URI = "uri";
         public static final String THUMBNAIL_URI = "thumb_uri";
 
+        public static final String DEFAULT_SORT_ORDER = ImageEntry.DATE_TAKEN + " DESC";
+
         /**
          * The date & time that the image was taken in units
          * of milliseconds since jan 1, 1970.
