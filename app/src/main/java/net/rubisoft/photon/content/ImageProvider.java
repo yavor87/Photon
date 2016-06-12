@@ -224,10 +224,18 @@ public class ImageProvider extends ContentProvider {
 
         switch (match) {
             case Image : {
+                selection = ImageContract.ImageEntry._ID + "=?";
+                selectionArgs = new String[] { uri.getLastPathSegment() };
+            }
+            case Images : {
                 rowsDeleted = db.delete(ImageContract.ImageEntry.TABLE_NAME, selection, selectionArgs);
                 break;
             }
             case Category : {
+                selection = ImageContract.CategoryEntry._ID + "=?";
+                selectionArgs = new String[] { uri.getLastPathSegment() };
+            }
+            case Categories : {
                 rowsDeleted = db.delete(ImageContract.CategoryEntry.TABLE_NAME, selection, selectionArgs);
                 break;
             }
@@ -252,10 +260,18 @@ public class ImageProvider extends ContentProvider {
         int rowsUpdated;
         switch (match) {
             case Image : {
+                selection = ImageContract.ImageEntry._ID + "=?";
+                selectionArgs = new String[] { uri.getLastPathSegment() };
+            }
+            case Images : {
                 rowsUpdated = db.update(ImageContract.ImageEntry.TABLE_NAME, values, selection, selectionArgs);
                 break;
             }
             case Category : {
+                selection = ImageContract.CategoryEntry._ID + "=?";
+                selectionArgs = new String[] { uri.getLastPathSegment() };
+            }
+            case Categories : {
                 rowsUpdated = db.update(ImageContract.CategoryEntry.TABLE_NAME, values, selection, selectionArgs);
                 break;
             }
