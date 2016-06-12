@@ -74,7 +74,7 @@ public class ImaggaCategorizer implements Categorizer {
                 if (labels != null) {
                     categories = new String[labels.length()];
                     for (int i = 0; i < labels.length(); i++) {
-                        categories[i] = labels.getString(i);
+                        categories[i] = normalizeCategoryName(labels.getString(i));
                     }
                 }
             } catch (JSONException e) {
@@ -96,8 +96,6 @@ public class ImaggaCategorizer implements Categorizer {
         }
 
         List<Categorization> categorizations = categorize(identificator);
-        // store categorization info
-
 
         if (identificator instanceof InternalContentIdentificator) {
             deleteImage(((InternalContentIdentificator) identificator).getId());
@@ -165,7 +163,7 @@ public class ImaggaCategorizer implements Categorizer {
             categorizations = new ArrayList<>();
             for (int i = 0; i < categories.length(); i++) {
                 JSONObject catObj = (JSONObject) categories.get(i);
-                categorizations.add(new Categorization(catObj.getString("name"),
+                categorizations.add(new Categorization(normalizeCategoryName(catObj.getString("name")),
                         (float) (catObj.getDouble("confidence") / 100d)));
             }
         } catch (JSONException e) {
@@ -185,6 +183,10 @@ public class ImaggaCategorizer implements Categorizer {
         }
 
         return response.ResponseCode == 200;
+    }
+
+    private static String normalizeCategoryName(String categoryName) {
+        return categoryName.toLowerCase().replace("_", " ");
     }
 
     private interface ContentIdentificator {
