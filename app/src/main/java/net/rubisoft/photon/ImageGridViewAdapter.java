@@ -6,9 +6,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CursorAdapter;
 import android.widget.ImageView;
-import static android.widget.ImageView.ScaleType.CENTER_CROP;
 
-import com.squareup.picasso.Picasso;
+import com.bumptech.glide.Glide;
+
+import static android.widget.ImageView.ScaleType.CENTER_CROP;
 
 final class ImageGridViewAdapter extends CursorAdapter {
     public ImageGridViewAdapter(Context context, Cursor c, int flags) {
@@ -30,9 +31,9 @@ final class ImageGridViewAdapter extends CursorAdapter {
             url = cursor.getString(PhotoListFragment.COL_IMAGE_URI);
 
         // Trigger the download of the URL asynchronously into the image view.
-        Picasso.with(context) //
+        Glide.with(context) //
                 .load(url) //
-                .fit()
+                .fitCenter()
 //                .resize(500, 500)
                 .into((ImageView) view);
     }

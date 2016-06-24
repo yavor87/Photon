@@ -14,7 +14,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
-import com.squareup.picasso.Picasso;
+import com.bumptech.glide.Glide;
 
 import net.rubisoft.photon.content.ImageContract;
 
@@ -105,7 +105,7 @@ public class ImageFragment extends Fragment implements LoaderManager.LoaderCallb
         if (loader.getId() == IMAGE_LOADER) {
             if (data.moveToFirst()) {
                 String imageUri = data.getString(COL_IMAGE_URI);
-                Picasso.with(getContext())
+                Glide.with(this)
                         .load(imageUri)
                         .into(mImageView);
             }
