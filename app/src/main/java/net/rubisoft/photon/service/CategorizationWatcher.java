@@ -12,7 +12,7 @@ public class CategorizationWatcher extends BroadcastReceiver {
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo info = cm.getActiveNetworkInfo();
         if (info != null) {
-            if (info.isConnected()) {
+            if (info.getType() == ConnectivityManager.TYPE_WIFI && info.isConnected()) {
                 // start service
                 context.startService(new Intent(context, CategorizationService.class));
             }
